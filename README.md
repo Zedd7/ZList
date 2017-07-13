@@ -20,6 +20,7 @@ There exists five main categories, each associated with a color code and a PNG f
 - GOLD : Yellow
 - REROLL : Black
 - TEAMKILL : Blue
+
 Complex categories (ex: ASSHOLEGOLD) can be created by merging main categories in alphabetical order and associating a new PNG file (ex: ".ASSHOLEGOLD.png").
 
 ### Legend
@@ -50,6 +51,7 @@ Il existe cinq catégories principales, chacune d'elles associée à un code de 
 - GOLD : Jaune
 - REROLL : Noir
 - TEAMKILL : Bleu
+
 Des catégories complexes (ex: ASSHOLEGOLD) peuvent être crées en fusionnant des catégories principales dans l'ordre alphabétique and en associant un nouveau fichier PNG (ex: ".ASSHOLEGOLD.png").
 
 ### Légende
