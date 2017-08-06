@@ -56,8 +56,8 @@ Des catégories complexes (ex: ASSHOLEGOLD) peuvent être crées en fusionnant d
 
 ### Légende
 
-- ASSHOLE : Attributé aux joueurs excessivement injurieux et/ou déplaisants et aux joueurs à la conduite anti-sportive.
-- CAMPER : Attributé aux joueurs campant de façon à épargner leur char ou à farmer des dégâts au détriment de leur équipe.
-- GOLD : Attributé aux joueurs tirant des munitions premium sur un joueur dont le nom n'est pas associé au code GOLD dans cette liste.
+- ASSHOLE : Attribué aux joueurs excessivement injurieux et/ou déplaisants et aux joueurs à la conduite anti-sportive.
+- CAMPER : Attribué aux joueurs campant de façon à épargner leur char ou à farmer des dégâts au détriment de leur équipe.
+- GOLD : Attribué aux joueurs tirant des munitions premium sur un joueur dont le nom n'est pas associé au code GOLD dans cette liste.
 - REROLL : Attribué aux joueurs donc le compte est un second compte/reset/premier compte sur un second serveur, sans considération des motivations.
-- TEAMKILL : Attributé aux joueurs tuant des alliés soit volontairement, soit par manque de prudence (à l'exception des tentative de sauvetage).
+- TEAMKILL : Attribué aux joueurs tuant des alliés soit volontairement, soit par manque de prudence (à l'exception des tentative de sauvetage).
