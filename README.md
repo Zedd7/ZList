@@ -38,7 +38,7 @@ As they are not included in the archive downloadable from the release page, it i
 
 1. Download and install [Git](https://git-scm.com/downloads). Customize git to your liking but make sure to check "Use Git from the Windows Command Prompt" when asked.
 2. Download and install [Python 3.6](https://www.python.org/downloads/) or higher. Check "Add Python 3.6 to PATH" and click "Install Now".
-3. Open a terminal with administrator privileges (right click on Start Menu > Command prompt (admin))
+3. Open a terminal with administrator privileges (search for "cmd" in the Start Menu > right click on it > "Execute as administator")
 4. Enter `pip install requests Pillow`
 5. Enter `cd %HOMEDRIVE%%HOMEPATH%`
 6. Enter `git clone https://github.com/Zedd7/ZList.git`
@@ -52,6 +52,7 @@ Please note that each script has its own purpose and can depend on the output of
 - player_identifier.py : It maps players' names to their account id in a CSV file.
 
 As such, they should be executed in the following order : player_identifier.py, ...
+By default, each script connects itself to the Wargaming API by using the application id "demo" which is open to all but is limited in the number of requests. Thus, results of different scripts may be truncated. If you wish to perform an analysis on the entirety of the ZList, it is necessary that you create an application through the tab "[My Applications](https://developers.wargaming.net/applications/)" and than you replace "demo" by the id of your new application in all the different scripts.
 
 ## Français
 
@@ -91,7 +92,7 @@ Etant donné qu'ils ne sont pas inclus dans l'archive téléchargeable depuis la
 
 1. Téléchargez et installez [Git](https://git-scm.com/downloads). Customisez git selon vos goûts mais prenez garde à cocher "Use Git from the Windows Command Prompt" lorsque demandé.
 2. Téléchargez et installez [Python 3.6](https://www.python.org/downloads/) ou ultérieur. Cochez "Add Python 3.6 to PATH" et cliquez sur "Install Now".
-3. Ouvrez un terminal avec les privilèges administrateur (clic droit sur le Menu Démarrer > Invite de commandes (admin))
+3. Ouvrez un terminal avec les privilèges administrateur (cherchez "cmd" dans le Menu Démarrer > clic droit dessus > "Exécuter en tant qu'administrateur")
 4. Entrez `pip install requests Pillow`
 5. Entrez `cd %HOMEDRIVE%%HOMEPATH%`
 6. Entrez `git clone https://github.com/Zedd7/ZList.git`
@@ -105,3 +106,4 @@ Veuillez notez que chaque script a sa propre fonction et peut dépendre du résu
 - player_identifier.py : Il lie les noms des joueurs à leur identificateur de compte dans un fichier CSV.
 
 Cela pris en considération, ils devraient être exécutés dans l'ordre suivant : player_identifier.py, ...
+Par défaut, chaque script se connecte à l'API de Wargaming en utilisant l'id d'application "demo" qui est accessible à tous mais est limitée en nombre de requêtes. Ainsi, les résultats des différents scripts peuvent être tronqués. Si vous souhaitez effectuer une analyse sur l'entièreté de la ZList, il est nécessaire que vous créiez une application via l'onglet "[My Applications](https://developers.wargaming.net/applications/)" et que vous remplaciez "demo" par l'id de votre nouvelle application dans les différents scripts.
