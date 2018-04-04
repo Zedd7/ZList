@@ -36,8 +36,8 @@ As they are not included in the archive downloadable from the release page, it i
 
 #### Toolset acquisition (Windows)
 
-1. Download and install [Git](https://git-scm.com/downloads). When asked, select "Use Git from the Windows Command Prompt".
-2. Download and install [Python 3.6](https://www.python.org/downloads/) or higher. When asked, select "pip" and "Add Python to environment variables".
+1. Download and install [Git](https://git-scm.com/downloads). Customize git to your liking but make sure to check "Use Git from the Windows Command Prompt" when asked.
+2. Download and install [Python 3.6](https://www.python.org/downloads/) or higher. Check "Add Python 3.6 to PATH" and click "Install Now".
 3. Open a terminal with administrator privileges (right click on Start Menu > Command prompt (admin))
 4. Enter `pip install requests Pillow`
 5. Enter `cd %HOMEDRIVE%%HOMEPATH%`
@@ -89,8 +89,8 @@ Etant donné qu'ils ne sont pas inclus dans l'archive téléchargeable depuis la
 
 #### Acquision des outils (Windows)
 
-1. Téléchargez et installez [Git](https://git-scm.com/downloads). Lorsque demandé, sélectionnez "Use Git from the Windows Command Prompt".
-2. Téléchargez et installez [Python 3.6](https://www.python.org/downloads/) ou ultérieur. Lorsque demandé, sélectionnez "pip" et "Add Python to environment variables".
+1. Téléchargez et installez [Git](https://git-scm.com/downloads). Customisez git selon vos goûts mais prenez garde à cocher "Use Git from the Windows Command Prompt" lorsque demandé.
+2. Téléchargez et installez [Python 3.6](https://www.python.org/downloads/) ou ultérieur. Cochez "Add Python 3.6 to PATH" et cliquez sur "Install Now".
 3. Ouvrez un terminal avec les privilèges administrateur (clic droit sur le Menu Démarrer > Invite de commandes (admin))
 4. Entrez `pip install requests Pillow`
 5. Entrez `cd %HOMEDRIVE%%HOMEPATH%`
