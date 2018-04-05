@@ -7,7 +7,8 @@ import json
 
 import requests
 
-APP_ID = 'demo'  # Replace with your own app id to extend the requests limit
+
+APP_ID = 'demo'
 ACCOUNT_STATS_REQUEST_URL = 'https://api.worldoftanks.eu/wot/account/info/'
 ACCOUNT_TANKS_REQUEST_URL = 'https://api.worldoftanks.eu/wot/account/tanks/'
 TANK_STATS_REQUEST_URL = 'https://api.worldoftanks.eu/wot/tanks/stats/'
@@ -34,6 +35,40 @@ TANK_STATS_FIELD_LIST = [
 EXP_VALUES_FILE_URL = 'https://static.modxvm.com/wn8-data-exp/json/wn8exp.json'
 RES_FOLDER = '../res'
 EXP_VALUES_FILE_PATH = '{folder}/wn8_exp_values.json'.format(folder=RES_FOLDER)
+
+
+def set_app_id(app_id):
+    """Replace the default application id by a new one."""
+    APP_ID = app_id
+    return APP_ID
+
+
+def get_exp_values_d():
+    """Download or load the last version of WN8 expected values."""
+    if not os.path.isdir(RES_FOLDER):
+        os.makedirs(RES_FOLDER)
+
+    exp_values_json = None
+    if not os.path.exists(EXP_VALUES_FILE_PATH):
+        response = requests.get(EXP_VALUES_FILE_URL)
+        with open(EXP_VALUES_FILE_PATH, 'w') as exp_values_file:
+            exp_values_file.write(response.text)
+            exp_values_json = response.json()
+    else:
+        with open(EXP_VALUES_FILE_PATH, 'r') as exp_values_file:
+            exp_values_json = json.load(exp_values_file)
+
+    exp_values_d = {}
+    if exp_values_json:
+        for tank_data in exp_values_json['data']:
+            exp_values_d[tank_data['IDNum']] = {
+                'damage_ratio': tank_data['expDamage'],
+                'spot_ratio': tank_data['expSpot'],
+                'kill_ratio': tank_data['expFrag'],
+                'defense_ratio': tank_data['expDef'],
+                'win_ratio': tank_data['expWinRate']
+            }
+    return exp_values_d
 
 
 def calculate_wn8(player_ids, exp_values_d):
@@ -160,31 +195,3 @@ def adjust_account_stats(account_stats_d, player_id, missing_tanks):
                     wins -= tank_stats['all']['wins']
                 account_stats = dmgs, spots, kills, defs, wins
                 account_stats_d[player_id] = account_stats
-
-
-def get_exp_values_d():
-    """Download or load the last version of WN8 expected values."""
-    if not os.path.isdir(RES_FOLDER):
-        os.makedirs(RES_FOLDER)
-
-    exp_values_json = None
-    if not os.path.exists(EXP_VALUES_FILE_PATH):
-        response = requests.get(EXP_VALUES_FILE_URL)
-        with open(EXP_VALUES_FILE_PATH, 'w') as exp_values_file:
-            exp_values_file.write(response.text)
-            exp_values_json = response.json()
-    else:
-        with open(EXP_VALUES_FILE_PATH, 'r') as exp_values_file:
-            exp_values_json = json.load(exp_values_file)
-
-    exp_values_d = {}
-    if exp_values_json:
-        for tank_data in exp_values_json['data']:
-            exp_values_d[tank_data['IDNum']] = {
-                'damage_ratio': tank_data['expDamage'],
-                'spot_ratio': tank_data['expSpot'],
-                'kill_ratio': tank_data['expFrag'],
-                'defense_ratio': tank_data['expDef'],
-                'win_ratio': tank_data['expWinRate']
-            }
-    return exp_values_d

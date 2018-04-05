@@ -8,7 +8,8 @@ import csv
 
 import requests
 
-APP_ID = 'demo'  # Replace with your own app id to extend the requests limit
+CONFIG_FILE = '../res/config.txt'
+APP_ID = 'demo'
 ACCOUNT_INFO_REQUEST_URL = 'https://api.worldoftanks.eu/wot/account/list/'
 BATCH_SIZE = 100
 ZLIST_FOLDER = '../res_mods/mods/shared_resources/xvm/res/clanicons/EU/nick'
@@ -45,7 +46,7 @@ def get_player_ids(player_names, output_file_path):
             for player_name in batch_ids:
                 player_ids[player_name] = batch_ids[player_name]
         progress = index / player_count * 100
-        sys.stdout.write("\rRequesting player ids : %.2f %%" % progress)
+        sys.stdout.write("\rRequesting player ids: %.2f %%" % progress)
         sys.stdout.flush()
     print()
     return player_ids
@@ -101,9 +102,28 @@ def register_player_ids(player_ids, output_file_path):
 
 
 if __name__ == "__main__":
+    default_app_id = True
+    if os.path.exists(CONFIG_FILE):
+        with open(CONFIG_FILE, 'r') as config:
+            app_id_line = config.readline().rstrip()
+            print(APP_ID)
+            if (len(app_id_line.split('=')) == 2 and
+                    app_id_line.split('=')[0] == 'WG_API_APPLICATION_ID' and
+                    app_id_line.split('=')[1] != APP_ID):
+                API_ID = app_id_line.split('=')[1]
+                default_app_id = False
+    if default_app_id:
+        print("No custom application id could be found in",
+              "{config}.".format(config=os.path.abspath(CONFIG_FILE)), '\n'
+              "The default id will be used but the number of requests to",
+              "WG API will be limited and the results may be truncated.")
+    else:
+        print("New application id loaded from config: {id}".format(id=API_ID))
+
     if not os.path.isdir(ZLIST_FOLDER):
         print("ZList folder not found, creating it.")
         os.makedirs(ZLIST_FOLDER)
+
     if not os.path.isdir(OUTPUT_FOLDER):
         os.makedirs(OUTPUT_FOLDER)
     if not os.path.exists(OUTPUT_FILE):
