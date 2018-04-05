@@ -117,7 +117,7 @@ def load_expected_stats(exp_stats_d, missing_tanks_d, player_ids, exp_values_d):
             for tank_data in response_content['data'][player_id]:
                 tank_id = tank_data['tank_id']
                 battles = tank_data['statistics']['battles']
-                if tank_id in exp_values_dict:
+                if tank_id in exp_values_d:
                     tank_exp_values = exp_values_d[tank_id]
                     exp_dmgs += tank_exp_values['damage_ratio'] * battles
                     exp_spots += tank_exp_values['spot_ratio'] * battles
