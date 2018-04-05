@@ -53,7 +53,7 @@ Please note that each script has its own purpose and can depend on the output of
 
 As such, they should be executed in the following order : player_identifier.py, ...
 
-By default, each script connects itself to the Wargaming API by using the application id "demo" which is open to all but is limited in the number of requests. Thus, results of different scripts may be truncated. If you wish to perform an analysis on the entirety of the ZList, it is necessary that you create an application through the tab "[My Applications](https://developers.wargaming.net/applications/)" and than you replace "demo" by the id of your new application in all the different scripts.
+By default, each script connects itself to the Wargaming API by using the application id "demo" which is open to all but is limited in the number of requests. Thus, results of different scripts may be truncated. If you wish to perform an analysis on the entirety of the ZList, it is necessary that you create an application through the tab "[My Applications](https://developers.wargaming.net/applications/)" and that you replace "demo" by the id of your new application in all the different scripts.
 
 ## Français
 
