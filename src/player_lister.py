@@ -14,9 +14,9 @@ APP_ID = 'demo'
 ACCOUNT_INFO_REQUEST_URL = "https://api.worldoftanks.eu/wot/account/info/"
 BATCH_SIZE = 100
 OUTPUT_FOLDER = "../data"
-OUTPUT_FILE = '{folder}/CLUSTER_ID.csv'.format(folder=OUTPUT_FOLDER)
+OUTPUT_FILE = '{folder}/SERVER_ID.csv'.format(folder=OUTPUT_FOLDER)
 ID_LOWER_BOUND = 500000000
-ID_UPPER_BOUND = 547800100
+ID_UPPER_BOUND = 560000000
 # (ID_UPPER_BOUND - ID_LOWER_BOUND) / ID_SKIP_INTERVAL = nb of accounts enumerated
 
 # TODO: random skip
@@ -99,7 +99,7 @@ if __name__ == "__main__":
         print("  {number} : {name}".format(number=i + 1, name=search_mode[0]))
     while choice not in range(1, len(SEARCH_MODES) + 1):
         try:
-            choice = int(input("Number of the search mode to use (recommanded: 2) : "))
+            choice = int(input("Number of the search mode to use (recommended: 2) : "))
         except:
             print("The value must be the number of a search mode.")
     step = int(1 / SEARCH_MODES[choice - 1][1])
