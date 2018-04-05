@@ -8,7 +8,6 @@ import json
 import requests
 
 
-APP_ID = 'demo'
 ACCOUNT_STATS_REQUEST_URL = 'https://api.worldoftanks.eu/wot/account/info/'
 ACCOUNT_TANKS_REQUEST_URL = 'https://api.worldoftanks.eu/wot/account/tanks/'
 TANK_STATS_REQUEST_URL = 'https://api.worldoftanks.eu/wot/tanks/stats/'
@@ -35,12 +34,6 @@ TANK_STATS_FIELD_LIST = [
 EXP_VALUES_FILE_URL = 'https://static.modxvm.com/wn8-data-exp/json/wn8exp.json'
 RES_FOLDER = '../res'
 EXP_VALUES_FILE_PATH = '{folder}/wn8_exp_values.json'.format(folder=RES_FOLDER)
-
-
-def set_app_id(app_id):
-    """Replace the default application id by a new one."""
-    APP_ID = app_id
-    return APP_ID
 
 
 def get_exp_values_d():
@@ -71,7 +64,7 @@ def get_exp_values_d():
     return exp_values_d
 
 
-def calculate_wn8(player_ids, exp_values_d):
+def calculate_wn8(player_ids, exp_values_d, app_id='demo'):
     """Calculate the WN8 of a batch of players."""
     wn8_d, account_stats_d, exp_stats_d = {}, {}, {}
     missing_tanks_d = {player_id: [] for player_id in player_ids}
@@ -81,12 +74,12 @@ def calculate_wn8(player_ids, exp_values_d):
         batches.append(player_ids[index:min(index + BATCH_SIZE, len(player_ids))])
         index += len(batches[-1])
     for batch in batches:
-        load_account_stats(account_stats_d, batch)
-        load_expected_stats(exp_stats_d, missing_tanks_d, batch, exp_values_d)
+        load_account_stats(account_stats_d, batch, app_id)
+        load_expected_stats(exp_stats_d, missing_tanks_d, batch, exp_values_d, app_id)
 
     for player_id in player_ids:
         if all(player_id in stats for stats in (account_stats_d, exp_stats_d)):
-            adjust_account_stats(account_stats_d, player_id, missing_tanks_d[player_id])
+            adjust_account_stats(account_stats_d, player_id, missing_tanks_d[player_id], app_id)
             dmgs, spots, kills, defs, wins = account_stats_d[player_id]
             exp_dmgs, exp_spots, exp_kills, exp_defs, exp_wins = exp_stats_d[player_id]
 
@@ -112,10 +105,10 @@ def calculate_wn8(player_ids, exp_values_d):
     return wn8_d
 
 
-def load_account_stats(account_stats_d, player_ids):
+def load_account_stats(account_stats_d, player_ids, app_id):
     """Retrieve the required statistics of the accounts."""
     payload = {
-        'application_id': APP_ID,
+        'application_id': app_id,
         'account_id': ','.join(player_ids),
         'fields': ','.join(ACCOUNT_STATS_FIELD_LIST)
     }
@@ -138,10 +131,10 @@ def load_account_stats(account_stats_d, player_ids):
             account_stats_d[player_id] = account_stats
 
 
-def load_expected_stats(exp_stats_d, missing_tanks_d, player_ids, exp_values_d):
+def load_expected_stats(exp_stats_d, missing_tanks_d, player_ids, exp_values_d, app_id):
     """Calculate the required expected statistics of the accounts."""
     payload = {
-        'application_id': APP_ID,
+        'application_id': app_id,
         'account_id': ','.join(player_ids),
         'fields': ','.join(ACCOUNT_TANKS_FIELD_LIST)
     }
@@ -171,11 +164,11 @@ def load_expected_stats(exp_stats_d, missing_tanks_d, player_ids, exp_values_d):
             exp_stats_d[player_id] = exp_stats
 
 
-def adjust_account_stats(account_stats_d, player_id, missing_tanks):
+def adjust_account_stats(account_stats_d, player_id, missing_tanks, app_id):
     """Adjust account totals with stats of missing tanks."""
     if missing_tanks:
         payload = {
-            'application_id': APP_ID,
+            'application_id': app_id,
             'account_id': player_id,
             'fields': ','.join(TANK_STATS_FIELD_LIST),
             'tank_id': ','.join(missing_tanks)
