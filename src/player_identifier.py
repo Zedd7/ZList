@@ -109,7 +109,7 @@ if __name__ == "__main__":
             if (len(app_id_line.split('=')) == 2 and
                     app_id_line.split('=')[0] == 'WG_API_APPLICATION_ID' and
                     app_id_line.split('=')[1] != APP_ID):
-                API_ID = app_id_line.split('=')[1]
+                APP_ID = app_id_line.split('=')[1]
                 default_app_id = False
     if default_app_id:
         print("No custom application id could be found in",
@@ -117,7 +117,7 @@ if __name__ == "__main__":
               "The default id will be used but the number of requests to",
               "WG API will be limited and the results may be truncated.")
     else:
-        print("New application id loaded from config: {id}".format(id=API_ID))
+        print("New application id loaded from config: {id}".format(id=APP_ID))
 
     if not os.path.isdir(ZLIST_FOLDER):
         print("ZList folder not found, creating it.")

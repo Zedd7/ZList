@@ -17,14 +17,13 @@ OUTPUT_FOLDER = "../data"
 OUTPUT_FILE = '{folder}/CLUSTER_ID.csv'.format(folder=OUTPUT_FOLDER)
 ID_LOWER_BOUND = 500000000
 ID_UPPER_BOUND = 547800100
-ID_SKIP_INTERVAL = 100000
 # (ID_UPPER_BOUND - ID_LOWER_BOUND) / ID_SKIP_INTERVAL = nb of accounts enumerated
 
 # TODO: random skip
 # TODO: load from previous file
 
 
-def list_accounts():
+def list_accounts(step):
     """List a fraction of all existing accounts ids in provided range."""
     accounts = []
     account_id = ID_LOWER_BOUND
@@ -33,7 +32,7 @@ def list_accounts():
         while len(batch) < BATCH_SIZE and account_id <= ID_UPPER_BOUND:
             batch.append(str(account_id))
             if account_id < ID_UPPER_BOUND:
-                account_id = min(account_id + ID_SKIP_INTERVAL, ID_UPPER_BOUND)
+                account_id = min(account_id + step, ID_UPPER_BOUND)
             else:
                 account_id += 1
         payload = {
@@ -78,7 +77,7 @@ if __name__ == "__main__":
             if (len(app_id_line.split('=')) == 2 and
                     app_id_line.split('=')[0] == 'WG_API_APPLICATION_ID' and
                     app_id_line.split('=')[1] != APP_ID):
-                API_ID = app_id_line.split('=')[1]
+                APP_ID = app_id_line.split('=')[1]
                 default_app_id = False
     if default_app_id:
         print("No custom application id could be found in",
@@ -86,12 +85,24 @@ if __name__ == "__main__":
               "The default id will be used but the number of requests to",
               "WG API will be limited and the results may be truncated.")
     else:
-        print("New application id loaded from config: {id}".format(id=API_ID))
+        print("New application id loaded from config: {id}".format(id=APP_ID))
 
     if not os.path.isdir(OUTPUT_FOLDER):
         os.makedirs(OUTPUT_FOLDER)
     if not os.path.exists(OUTPUT_FILE):
         open(OUTPUT_FILE, "w").close()
 
-    accounts = list_accounts()
+    step, choice = None, -1
+    SEARCH_MODES = [('fast', 0.0001), ('light', 0.001), ('medium', 0.01), ('dense', 0.1), ('full', 1)]
+    print("Choose the search mode for account id testing among the followings:")
+    for i, search_mode in enumerate(SEARCH_MODES):
+        print("  {number} : {name}".format(number=i + 1, name=search_mode[0]))
+    while choice not in range(1, len(SEARCH_MODES) + 1):
+        try:
+            choice = int(input("Number of the search mode to use (recommanded: 2) : "))
+        except:
+            print("The value must be the number of a search mode.")
+    step = int(1 / SEARCH_MODES[choice - 1][1])
+
+    accounts = list_accounts(step)
     register_accounts(accounts, OUTPUT_FILE)
