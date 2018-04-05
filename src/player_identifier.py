@@ -106,7 +106,6 @@ if __name__ == "__main__":
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, 'r') as config:
             app_id_line = config.readline().rstrip()
-            print(APP_ID)
             if (len(app_id_line.split('=')) == 2 and
                     app_id_line.split('=')[0] == 'WG_API_APPLICATION_ID' and
                     app_id_line.split('=')[1] != APP_ID):
