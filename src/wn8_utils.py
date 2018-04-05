@@ -50,16 +50,16 @@ def calculate_wn8(player_ids, exp_values_d):
         load_expected_stats(exp_stats_d, missing_tanks_d, batch, exp_values_d)
 
     for player_id in player_ids:
-        adjust_account_stats(account_stats_d, player_id, missing_tanks_d[player_id])
         if all(player_id in stats for stats in (account_stats_d, exp_stats_d)):
+            adjust_account_stats(account_stats_d, player_id, missing_tanks_d[player_id])
             dmgs, spots, kills, defs, wins = account_stats_d[player_id]
             exp_dmgs, exp_spots, exp_kills, exp_defs, exp_wins = exp_stats_d[player_id]
 
-            r_dmg = dmgs / exp_dmgs
-            r_spot = spots / exp_spots
-            r_kill = kills / exp_kills
-            r_def = defs / exp_defs
-            r_win = wins / exp_wins
+            r_dmg = dmgs / exp_dmgs if exp_dmgs > 0 else 0
+            r_spot = spots / exp_spots if exp_spots > 0 else 0
+            r_kill = kills / exp_kills if exp_kills > 0 else 0
+            r_def = defs / exp_defs if exp_defs > 0 else 0
+            r_win = wins / exp_wins if exp_wins > 0 else 0
 
             r_dmg_c = max(0, (r_dmg - 0.22) / 0.78)
             r_spot_c = max(0, min(r_dmg_c + 0.1, (r_spot - 0.38) / 0.62))
@@ -90,14 +90,17 @@ def load_account_stats(account_stats_d, player_ids):
     for player_id in player_ids:
         account_stats = None
         if response_content['status'] == 'ok':
-            stats = response_content['data'][player_id]['statistics']['all']
-            dmgs = stats['damage_dealt']
-            spots = stats['spotted']
-            kills = stats['frags']
-            defs = stats['dropped_capture_points']
-            wins = stats['wins']
-            account_stats = dmgs, spots, kills, defs, wins
-        account_stats_d[player_id] = account_stats
+            player_data = response_content['data'][player_id]
+            if player_data:
+                player_stats = player_data['statistics']['all']
+                dmgs = player_stats['damage_dealt']
+                spots = player_stats['spotted']
+                kills = player_stats['frags']
+                defs = player_stats['dropped_capture_points']
+                wins = player_stats['wins']
+                account_stats = dmgs, spots, kills, defs, wins
+        if account_stats:
+            account_stats_d[player_id] = account_stats
 
 
 def load_expected_stats(exp_stats_d, missing_tanks_d, player_ids, exp_values_d):
@@ -114,20 +117,23 @@ def load_expected_stats(exp_stats_d, missing_tanks_d, player_ids, exp_values_d):
         exp_stats = None
         if response_content['status'] == 'ok':
             exp_dmgs, exp_spots, exp_kills, exp_defs, exp_wins = (0,) * 5
-            for tank_data in response_content['data'][player_id]:
-                tank_id = tank_data['tank_id']
-                battles = tank_data['statistics']['battles']
-                if tank_id in exp_values_d:
-                    tank_exp_values = exp_values_d[tank_id]
-                    exp_dmgs += tank_exp_values['damage_ratio'] * battles
-                    exp_spots += tank_exp_values['spot_ratio'] * battles
-                    exp_kills += tank_exp_values['kill_ratio'] * battles
-                    exp_defs += tank_exp_values['defense_ratio'] * battles
-                    exp_wins += (tank_exp_values['win_ratio'] / 100) * battles
-                else:
-                    missing_tanks_d[player_id].append(str(tank_id))
-            exp_stats = exp_dmgs, exp_spots, exp_kills, exp_defs, exp_wins
-        exp_stats_d[player_id] = exp_stats
+            player_data = response_content['data'][player_id]
+            if player_data:
+                for tank_data in player_data:
+                    tank_id = tank_data['tank_id']
+                    battles = tank_data['statistics']['battles']
+                    if tank_id in exp_values_d:
+                        tank_exp_values = exp_values_d[tank_id]
+                        exp_dmgs += tank_exp_values['damage_ratio'] * battles
+                        exp_spots += tank_exp_values['spot_ratio'] * battles
+                        exp_kills += tank_exp_values['kill_ratio'] * battles
+                        exp_defs += tank_exp_values['defense_ratio'] * battles
+                        exp_wins += (tank_exp_values['win_ratio'] / 100) * battles
+                    else:
+                        missing_tanks_d[player_id].append(str(tank_id))
+                exp_stats = exp_dmgs, exp_spots, exp_kills, exp_defs, exp_wins
+        if exp_stats:
+            exp_stats_d[player_id] = exp_stats
 
 
 def adjust_account_stats(account_stats_d, player_id, missing_tanks):
@@ -144,14 +150,16 @@ def adjust_account_stats(account_stats_d, player_id, missing_tanks):
 
         if response_content['status'] == 'ok':
             dmgs, spots, kills, defs, wins = account_stats_d[player_id]
-            for tank_stats in response_content['data'][player_id]:
-                dmgs -= tank_stats['all']['damage_dealt']
-                spots -= tank_stats['all']['spotted']
-                kills -= tank_stats['all']['frags']
-                defs -= tank_stats['all']['dropped_capture_points']
-                wins -= tank_stats['all']['wins']
-            account_stats = dmgs, spots, kills, defs, wins
-            account_stats_d[player_id] = account_stats
+            player_data = response_content['data'][player_id]
+            if player_data:
+                for tank_stats in player_data:
+                    dmgs -= tank_stats['all']['damage_dealt']
+                    spots -= tank_stats['all']['spotted']
+                    kills -= tank_stats['all']['frags']
+                    defs -= tank_stats['all']['dropped_capture_points']
+                    wins -= tank_stats['all']['wins']
+                account_stats = dmgs, spots, kills, defs, wins
+                account_stats_d[player_id] = account_stats
 
 
 def get_exp_values_d():
