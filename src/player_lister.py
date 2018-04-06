@@ -4,7 +4,7 @@
 
 import sys
 import os
-# import random
+import random
 import csv
 
 import requests
@@ -17,19 +17,17 @@ OUTPUT_FOLDER = "../data"
 OUTPUT_FILE = '{folder}/SERVER_ID.csv'.format(folder=OUTPUT_FOLDER)
 ID_LOWER_BOUND = 500000000
 ID_UPPER_BOUND = 560000000
-# (ID_UPPER_BOUND - ID_LOWER_BOUND) / ID_SKIP_INTERVAL = nb of accounts enumerated
-
-# TODO: random skip
-# TODO: load from previous file
 
 
-def list_accounts(step):
+def list_accounts(step, output_file_path, random_offset=True):
     """List a fraction of all existing accounts ids in provided range."""
-    accounts = []
-    account_id = ID_LOWER_BOUND
+    account_ids, loaded_account_id_amount = load_account_ids(output_file_path)
+    offset = random.randint(0, step) if random_offset else 0
+    account_id = ID_LOWER_BOUND + offset
     while account_id <= ID_UPPER_BOUND:
         batch = []
         while len(batch) < BATCH_SIZE and account_id <= ID_UPPER_BOUND:
+            # Do not test if already registered to update nickname
             batch.append(str(account_id))
             if account_id < ID_UPPER_BOUND:
                 account_id = min(account_id + step, ID_UPPER_BOUND)
@@ -48,28 +46,41 @@ def list_accounts(step):
                 account_data = response_content['data'][player_id]
                 if account_data:
                     player_name = account_data['nickname']
-                    accounts.append((player_name, player_id))
+                    account_ids[player_id] = player_name
 
         progress = (account_id - ID_LOWER_BOUND) / (ID_UPPER_BOUND - ID_LOWER_BOUND + 1) * 100
-        sys.stdout.write("\rTesting account ids : %.2f %%" % progress)
+        sys.stdout.write("\rTesting account ids : %.2f %% " % progress)
         sys.stdout.flush()
-    print()
+    print("Found %d existing accounts." % (len(account_ids) - loaded_account_id_amount))
+    return account_ids
 
-    return accounts
+
+def load_account_ids(output_file_path):
+    """Load dictionary of known existing accounts."""
+    print("Loading existing accounts from CSV file... ", end='')
+    account_ids = {}
+    with open(output_file_path, 'r', newline='') as output_file:
+        csv_reader = csv.reader(output_file, delimiter=',')
+        for player_name, account_id in csv_reader:
+            account_ids[account_id] = player_name
+    print("Done.", end=' ')
+    loaded_account_id_amount = len(account_ids)
+    print("Found %d registered accounts." % loaded_account_id_amount)
+    return account_ids, loaded_account_id_amount
 
 
-def register_accounts(accounts, output_file_path):
+def register_accounts(account_ids, output_file_path):
     """Register existing accounts in CSV file."""
-    print("%d existing account found." % len(accounts))
     print("Registering account ids to CSV file... ", end='')
     with open(output_file_path, 'w', newline='') as csv_file:
         csv_writer = csv.writer(csv_file, delimiter=',')
-        for player_name, player_id in sorted(accounts, key=lambda x: x[1]):
-            csv_writer.writerow([player_name, player_id])
+        for account_id in sorted(account_ids, key=lambda x: int(x)):
+            csv_writer.writerow([account_ids[account_id], account_id])
     print("Done.")
 
 
 if __name__ == "__main__":
+    # Load custom application id from config
     default_app_id = True
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, 'r') as config:
@@ -87,22 +98,38 @@ if __name__ == "__main__":
     else:
         print("New application id loaded from config: {id}".format(id=APP_ID))
 
+    # Prepare output file
     if not os.path.isdir(OUTPUT_FOLDER):
         os.makedirs(OUTPUT_FOLDER)
     if not os.path.exists(OUTPUT_FILE):
         open(OUTPUT_FILE, "w").close()
 
-    step, choice = None, -1
+    # Select search mode
     SEARCH_MODES = [('fast', 0.0001), ('light', 0.001), ('medium', 0.01), ('dense', 0.1), ('full', 1)]
+    step, search_mode_selection = None, -1
     print("Choose the search mode for account id testing among the followings:")
     for i, search_mode in enumerate(SEARCH_MODES):
-        print("  {number} : {name}".format(number=i + 1, name=search_mode[0]))
-    while choice not in range(1, len(SEARCH_MODES) + 1):
+        print("  {number} : {name}".format(number=(i + 1), name=search_mode[0]))
+    while search_mode_selection not in range(1, len(SEARCH_MODES) + 1):
         try:
-            choice = int(input("Number of the search mode to use (recommended: 2) : "))
+            search_mode_selection = int(input("Number of the search mode to use (recommended: 2) : "))
         except:
             print("The value must be the number of a search mode.")
-    step = int(1 / SEARCH_MODES[choice - 1][1])
+    step = int(1 / SEARCH_MODES[search_mode_selection - 1][1])
 
-    accounts = list_accounts(step)
-    register_accounts(accounts, OUTPUT_FILE)
+    # Select offset option
+    OFFSET_OPTIONS = [('deterministic', False), ('random', True)]
+    random_offset, offset_option_selection = None, -1
+    print("Choose between deterministic or random search:")
+    for i, offset_option in enumerate(OFFSET_OPTIONS):
+        print("  {number} : {name}".format(number=(i + 1), name=offset_option[0]))
+    while offset_option_selection not in range(1, len(OFFSET_OPTIONS) + 1):
+        try:
+            offset_option_selection = int(input("Number of the selection (recommended: 2) : "))
+        except:
+            print("The value must be the number of a search method.")
+    random_offset = OFFSET_OPTIONS[offset_option_selection - 1][1]
+
+    # Perform search
+    account_ids = list_accounts(step, OUTPUT_FILE, random_offset)
+    register_accounts(account_ids, OUTPUT_FILE)
