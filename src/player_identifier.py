@@ -14,25 +14,25 @@ ACCOUNT_INFO_REQUEST_URL = 'https://api.worldoftanks.eu/wot/account/list/'
 BATCH_SIZE = 100
 ZLIST_FOLDER = '../res_mods/mods/shared_resources/xvm/res/clanicons/EU/nick'
 OUTPUT_FOLDER = '../data'
-OUTPUT_FILE = '{folder}/ZLIST_ID.csv'.format(folder=OUTPUT_FOLDER)
+CSV_FILE = '{folder}/ZLIST_ID.csv'.format(folder=OUTPUT_FOLDER)
 UNKNOWN_ID = -1
 
 
-def get_player_names(player_folder):
+def get_player_names():
     """Extract player names from ZList."""
-    print("Extracting player names from ZList... ", end='')
+    print("Extracting player names from ZList... ", end='', flush=True)
     player_names = []
-    for file_name in os.listdir(player_folder):
+    for file_name in os.listdir(ZLIST_FOLDER):
         if not file_name.startswith('.'):  # Is not a category file
             player_names.append(file_name.rstrip('.png'))
     print("Done.")
     return player_names
 
 
-def get_player_ids(player_names, output_file_path):
+def get_player_ids(player_names):
     """Get account id of players."""
     # Retrieve previously registered player ids
-    player_ids = load_player_ids(output_file_path)
+    player_ids = load_player_ids()
     index, player_count = 0, len(player_names)
     while index < len(player_names):
         batch = []
@@ -52,12 +52,12 @@ def get_player_ids(player_names, output_file_path):
     return player_ids
 
 
-def load_player_ids(output_file_path):
+def load_player_ids():
     """Load dictionary of known mappings for player names and their id."""
-    print("Loading registered player ids from CSV file... ", end='')
+    print("Loading registered player ids from CSV file... ", end='', flush=True)
     player_ids = {}
-    with open(output_file_path, 'r', newline='') as output_file:
-        csv_reader = csv.reader(output_file, delimiter=',')
+    with open(CSV_FILE, 'r', newline='') as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
         for player_name, player_id in csv_reader:
             player_ids[player_name] = player_id
     print("Done.")
@@ -91,17 +91,18 @@ def get_player_name(player_name, player_names):
     return player_name
 
 
-def register_player_ids(player_ids, output_file_path):
+def register_player_ids(player_ids):
     """Register player ids in CSV file."""
-    print("Registering player ids to CSV file... ", end='')
-    with open(output_file_path, 'w', newline='') as output_file:
-        csv_writer = csv.writer(output_file, delimiter=',')
+    print("Registering player ids to CSV file... ", end='', flush=True)
+    with open(CSV_FILE, 'w', newline='') as csv_file:
+        csv_writer = csv.writer(csv_file, delimiter=',')
         for player in sorted(player_ids.keys(), key=str.lower):
             csv_writer.writerow([player, player_ids[player]])
     print("Done.")
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
+    # Load custom application id from config
     default_app_id = True
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, 'r') as config:
@@ -119,15 +120,18 @@ if __name__ == "__main__":
     else:
         print("New application id loaded from config: {id}".format(id=APP_ID))
 
+    # Prepare intput folder
     if not os.path.isdir(ZLIST_FOLDER):
         print("ZList folder not found, creating it.")
         os.makedirs(ZLIST_FOLDER)
 
+    # Prepare output file
     if not os.path.isdir(OUTPUT_FOLDER):
         os.makedirs(OUTPUT_FOLDER)
-    if not os.path.exists(OUTPUT_FILE):
-        open(OUTPUT_FILE, 'w').close()
+    if not os.path.exists(CSV_FILE):
+        open(CSV_FILE, 'w').close()
 
-    player_names = get_player_names(ZLIST_FOLDER)
-    player_ids = get_player_ids(player_names, OUTPUT_FILE)
-    register_player_ids(player_ids, OUTPUT_FILE)
+    # Perform identification
+    player_names = get_player_names()
+    player_ids = get_player_ids(player_names)
+    register_player_ids(player_ids)
