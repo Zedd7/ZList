@@ -2,16 +2,18 @@
 
 """Categorize players according to the color of their assigned PNG file."""
 
-import sys
 import os
+import sys
 import csv
 
 from PIL import Image
 
+import ui_utils
+
 ZLIST_FOLDER = '../res_mods/mods/shared_resources/xvm/res/clanicons/EU/nick'
-OUTPUT_FOLDER = '../data'
-CATEGORIES_FOLDER = '{output_folder}/categories'.format(output_folder=OUTPUT_FOLDER)
-ZLIST_FILE = '{output_folder}/ZLIST_ID.csv'.format(output_folder=OUTPUT_FOLDER)
+DATA_FOLDER = '../data'
+CATEGORIES_FOLDER = '{data_folder}/categories'.format(data_folder=DATA_FOLDER)
+ZLIST_FILE = '{data_folder}/ZLIST_ID.csv'.format(data_folder=DATA_FOLDER)
 CATEGORY_FILE_FORMAT = '{categories_folder}/%s.csv'.format(categories_folder=CATEGORIES_FOLDER)
 MAIN_CATEGORIES = ["ASSHOLE", "CAMPER", "GOLD", "REROLL", "TEAMKILL"]
 
@@ -42,7 +44,7 @@ def get_category_palette():
     return category_palette
 
 
-def get_player_image_d(repair_images=False):
+def get_player_image_d(should_repair_images=False):
     """Load the PNG file assigned to each player."""
     player_image_d, repaired_image_file_name_d = {}, {}
     file_names = os.listdir(ZLIST_FOLDER)
@@ -60,7 +62,7 @@ def get_player_image_d(repair_images=False):
     print()
 
     index, repair_count = 0, len(repaired_image_file_name_d)
-    if repair_images and repair_count > 0:
+    if should_repair_images and repair_count > 0:
         for file_name, image in repaired_image_file_name_d.items():
             image.save(os.path.join(ZLIST_FOLDER, file_name))
             progress = (index + 1) / repair_count * 100
@@ -150,51 +152,37 @@ def register_player_categories(player_categories_d, player_ids, use_complex_cate
 
 
 if __name__ == '__main__':
-    # Prepare intput file
-    if not os.path.isdir(OUTPUT_FOLDER):
-        os.makedirs(OUTPUT_FOLDER)
-    if not os.path.exists(ZLIST_FILE):
-            open(ZLIST_FILE, 'w').close()
+    input("The module player_categorizer relies on the colours of the PNG file "
+          "associated with the name of a player to determine the category of "
+          "the latter.\n"
+          "It handles altered image files (some pixels may see their color "
+          "change when the file is copied or moved) and custom categories if "
+          "you wish to extend this list by yourself.\n"
+          "Avalaible categories are associated with a PNG file whose name "
+          "follows the format '.CATEGORY.png'.\n"
+          "You will be asked to choose between replacing altered image files "
+          "with their repaired version (speed up next executions of this script) "
+          "or leave them unchanged (skip this step).\n"
+          "You will also be asked to choose between sorting players according to "
+          "their main category (if a player has more than one category, he will "
+          "be listed in more than one file) or sorting them according to their "
+          "composite category (combinaison of the main categories of the player).\n\n"
+          "Press ENTER to continue (or CTRL + C + ENTER to abort).\n")
 
-    # Prepare output files
-    if not os.path.isdir(CATEGORIES_FOLDER):
-        os.makedirs(CATEGORIES_FOLDER)
-    for category_file in os.listdir(CATEGORIES_FOLDER):
-        os.remove(os.path.join(CATEGORIES_FOLDER, category_file))
+    ui_utils.prepare_files(DATA_FOLDER, ZLIST_FILE)
+    ui_utils.prepare_folders(CATEGORIES_FOLDER, clean=True)
 
-    # Select repair option
-    REPAIR_OPTIONS = [('save repaired images', True), ('do nothing', False)]
-    repair_option_selection = -1
-    print("Should repaired image files be registered ?")
-    for i, repair_option in enumerate(REPAIR_OPTIONS):
-        print("  {number} : {name}".format(number=(i + 1), name=repair_option[0]))
-    while repair_option_selection not in range(1, len(REPAIR_OPTIONS) + 1):
-        try:
-            repair_option_selection = int(input("Number of the selection (recommended: 1) : "))
-            if repair_option_selection not in range(1, len(REPAIR_OPTIONS) + 1):
-                raise ValueError
-        except:
-            print("The value must be the number of a repair option.")
-    repair_images = REPAIR_OPTIONS[repair_option_selection - 1][1]
+    should_repair_images = ui_utils.select_repair_option(
+        ('save repaired images', True),
+        ('do nothing', False)
+    )
+    use_complex_categories = ui_utils.select_category_option(
+        ('use main categories only', False),
+        ('use composite categories', True)
+    )
 
-    # Select category option
-    CATEGORY_OPTIONS = [('use main categories only', False), ('use composite categories', True)]
-    category_option_selection = -1
-    print("Should categorization take composite categories into account ?")
-    for i, category_option in enumerate(CATEGORY_OPTIONS):
-        print("  {number} : {name}".format(number=(i + 1), name=category_option[0]))
-    while category_option_selection not in range(1, len(CATEGORY_OPTIONS) + 1):
-        try:
-            category_option_selection = int(input("Number of the selection (recommended: 1) : "))
-            if category_option_selection not in range(1, len(CATEGORY_OPTIONS) + 1):
-                raise ValueError
-        except:
-            print("The value must be the number of a repair option.")
-    use_complex_categories = CATEGORY_OPTIONS[category_option_selection - 1][1]
-
-    # Perform categorization
     player_ids = load_player_ids()
     category_palette = get_category_palette()
-    player_image_d = get_player_image_d(repair_images)
+    player_image_d = get_player_image_d(should_repair_images)
     player_categories_d = get_player_categories_d(player_image_d, category_palette)
     register_player_categories(player_categories_d, player_ids, use_complex_categories)

@@ -16,7 +16,7 @@ There exist five main categories, each associated with a color code and a PNG fi
 - REROLL : black
 - TEAMKILL : cyan
 
-Complex categories (e.g.: ASSHOLEGOLD) can be created by merging main categories in alphabetical order and associating a new PNG file (e.g.: ".ASSHOLEGOLD.png").
+Complex categories (e.g.: ASSHOLE_GOLD) can be created by merging main categories in alphabetical order and associating a new PNG file (e.g.: ".ASSHOLE_GOLD.png").
 
 - ASSHOLE : Attributed to players being exaggeratedly offensive or having unsportsmanlike conduct.
 - CAMPER : Attributed to players camping in order to spare their tank or farm damages to the detriment of their team.
@@ -51,9 +51,10 @@ Please note that each script has its own purpose and can depend on the output of
 
 - player_identifier.py : Register account ids of players from the ZList in a CSV file.
 - player_lister.py : Register account ids of random players from the cluster in a CSV file.
-- player_categorizer.py : Register account if of players from the ZList according to their assigned color in a CSV file.
+- player_categorizer.py : Register account ids of players from the ZList according to their assigned color in a CSV file.
+- player_profiler.py : Display customs graphs of players' statistics.
 
-As such, they should be executed in the following order : player_identifier.py, player_lister (facultative), player_categorizer.
+As such, they should be executed in the following order : player_identifier.py, player_lister (facultative), player_categorizer, player_profiler.
 
 By default, each script connects itself to the Wargaming API by using the application id "demo" which is open to all but is limited in the number of requests. Thus, results of different scripts may be truncated. If you wish to perform an analysis on the entirety of the ZList, it is necessary that you create an application through the tab "[My Applications](https://developers.wargaming.net/applications/)" and that you replace "demo" by the id of your new application in the config file located at "res/config.txt".
 
@@ -73,7 +74,7 @@ Il existe cinq catégories principales, chacune d'elles associée à un code de 
 - REROLL : noir
 - TEAMKILL : cyan
 
-Des catégories complexes (ex.: ASSHOLEGOLD) peuvent être crées en fusionnant des catégories principales dans l'ordre alphabétique et en associant un nouveau fichier PNG (ex.: ".ASSHOLEGOLD.png").
+Des catégories complexes (ex.: ASSHOLE_GOLD) peuvent être crées en fusionnant des catégories principales dans l'ordre alphabétique et en associant un nouveau fichier PNG (ex.: ".ASSHOLE_GOLD.png").
 
 - ASSHOLE : Attribué aux joueurs étant excessivement injurieux ou ayant une conduite anti-sportive.
 - CAMPER : Attribué aux joueurs campant de façon à épargner leur char ou à farmer des dégâts au détriment de leur équipe.
@@ -109,7 +110,8 @@ Veuillez notez que chaque script a sa propre fonction et peut dépendre du résu
 - player_identifier.py : Enregistre les ids de compte des joueurs de la ZList dans un fichier CSV.
 - player_lister.py : Enregistre les ids de compte de joueurs aléatoires du cluster dans un fichier CSV.
 - player_categorizer.py : Enregistre les ids de compte des joueurs de la ZList selon la catégorie qui leur est assignée dans un fichier CSV.
+- player_profiler.py : Affiche des graphiques personnalisés des statistiques des joueurs.
 
-Cela pris en considération, ils devraient être exécutés dans l'ordre suivant : player_identifier.py, player_lister (facultatif), player_categorizer.
+Cela pris en considération, ils devraient être exécutés dans l'ordre suivant : player_identifier.py, player_lister (facultatif), player_categorizer, player_profiler.
 
 Par défaut, chaque script se connecte à l'API de Wargaming en utilisant l'id d'application "demo" qui est accessible à tous mais est limitée en nombre de requêtes. Ainsi, les résultats des différents scripts peuvent être tronqués. Si vous souhaitez effectuer une analyse sur l'entièreté de la ZList, il est nécessaire que vous créiez une application via l'onglet "[My Applications](https://developers.wargaming.net/applications/)" et que vous remplaciez "demo" par l'id de votre nouvelle application dans le fichier de config situé dans "res/config.txt".

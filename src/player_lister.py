@@ -3,26 +3,27 @@
 """List a fraction of all existing account ids and save them to file."""
 
 import sys
-import os
 import random
 import csv
 
 import requests
 
+import ui_utils
+
 CONFIG_FILE = '../res/config.txt'
 APP_ID = 'demo'
 ACCOUNT_INFO_REQUEST_URL = "https://api.worldoftanks.eu/wot/account/info/"
 BATCH_SIZE = 100
-OUTPUT_FOLDER = "../data"
-CSV_FILE = '{folder}/SERVER_ID.csv'.format(folder=OUTPUT_FOLDER)
+DATA_FOLDER = "../data"
+CSV_FILE = '{data_folder}/SERVER_ID.csv'.format(data_folder=DATA_FOLDER)
 ID_LOWER_BOUND = 500000000
 ID_UPPER_BOUND = 560000000
 
 
-def list_accounts(step, csv_file_path, random_offset=True):
+def list_accounts(step, csv_file_path, use_random_offset=True):
     """List a fraction of all existing accounts ids in provided range."""
     account_ids, loaded_account_id_amount = load_account_ids()
-    offset = random.randint(0, step) if random_offset else 0
+    offset = random.randint(0, step) if use_random_offset else 0
     account_id = ID_LOWER_BOUND + offset
     while account_id <= ID_UPPER_BOUND:
         batch = []
@@ -80,60 +81,32 @@ def register_accounts(account_ids):
 
 
 if __name__ == '__main__':
-    # Load custom application id from config
-    default_app_id = True
-    if os.path.exists(CONFIG_FILE):
-        with open(CONFIG_FILE, 'r') as config:
-            app_id_line = config.readline().rstrip()
-            if (len(app_id_line.split('=')) == 2 and
-                    app_id_line.split('=')[0] == 'WG_API_APPLICATION_ID' and
-                    app_id_line.split('=')[1] != APP_ID):
-                APP_ID = app_id_line.split('=')[1]
-                default_app_id = False
-    if default_app_id:
-        print("No custom application id could be found in",
-              "{config}.".format(config=os.path.abspath(CONFIG_FILE)), '\n'
-              "The default id will be used but the number of requests to",
-              "WG API will be limited and the results may be truncated.")
-    else:
-        print("New application id loaded from config: {id}".format(id=APP_ID))
+    input("The module player_lister connects to the WG API to retrieve the "
+          "list of registered account on the EU cluster.\n"
+          "As the number of account is too large to be explored in one run, "
+          "several methods are proposed to explore the database.\n"
+          "Each next method is 10 times slower than the previous method but is "
+          "expected to find 10 times more existing accounts.\n"
+          "You will be asked to choose one among the list of search methods.\n"
+          "You will also be asked to choose whether you want to add randomness "
+          "to the search (retrieves new account ids each time but does not "
+          "allow replication) or not.\n\n"
+          "Press ENTER to continue (or CTRL + C + ENTER to abort).\n")
 
-    # Prepare output file
-    if not os.path.isdir(OUTPUT_FOLDER):
-        os.makedirs(OUTPUT_FOLDER)
-    if not os.path.exists(CSV_FILE):
-        open(CSV_FILE, "w").close()
+    APP_ID = ui_utils.load_app_id(CONFIG_FILE, APP_ID)
+    ui_utils.prepare_files(DATA_FOLDER, CSV_FILE)
 
-    # Select search mode
-    SEARCH_MODES = [('fast', 0.0001), ('light', 0.001), ('medium', 0.01), ('dense', 0.1), ('full', 1)]
-    search_mode_selection = -1
-    print("Choose the search mode for account id testing among the followings:")
-    for i, search_mode in enumerate(SEARCH_MODES):
-        print("  {number} : {name}".format(number=(i + 1), name=search_mode[0]))
-    while search_mode_selection not in range(1, len(SEARCH_MODES) + 1):
-        try:
-            search_mode_selection = int(input("Number of the search mode to use (recommended: 2) : "))
-            if search_mode_selection not in range(1, len(SEARCH_MODES) + 1):
-                raise ValueError
-        except:
-            print("The value must be the number of a search mode.")
-    step = int(1 / SEARCH_MODES[search_mode_selection - 1][1])
+    step = int(1 / ui_utils.select_search_mode(
+        ('fast', 0.0001),
+        ('light', 0.001),
+        ('medium', 0.01),
+        ('dense', 0.1),
+        ('full', 1)
+    ))
+    use_random_offset = ui_utils.select_offset_option(
+        ('deterministic', False),
+        ('random', True)
+    )
 
-    # Select offset option
-    OFFSET_OPTIONS = [('deterministic', False), ('random', True)]
-    offset_option_selection = -1
-    print("Choose between deterministic or random search:")
-    for i, offset_option in enumerate(OFFSET_OPTIONS):
-        print("  {number} : {name}".format(number=(i + 1), name=offset_option[0]))
-    while offset_option_selection not in range(1, len(OFFSET_OPTIONS) + 1):
-        try:
-            offset_option_selection = int(input("Number of the selection (recommended: 2) : "))
-            if offset_option_selection not in range(1, len(OFFSET_OPTIONS) + 1):
-                raise ValueError
-        except:
-            print("The value must be the number of a search method.")
-    random_offset = OFFSET_OPTIONS[offset_option_selection - 1][1]
-
-    # Perform search
-    account_ids = list_accounts(step, random_offset)
+    account_ids = list_accounts(step, use_random_offset)
     register_accounts(account_ids)

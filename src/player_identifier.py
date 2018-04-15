@@ -2,19 +2,21 @@
 
 """Map players' names to their account id in a CSV file."""
 
-import sys
 import os
+import sys
 import csv
 
 import requests
+
+import ui_utils
 
 CONFIG_FILE = '../res/config.txt'
 APP_ID = 'demo'
 ACCOUNT_INFO_REQUEST_URL = 'https://api.worldoftanks.eu/wot/account/list/'
 BATCH_SIZE = 100
 ZLIST_FOLDER = '../res_mods/mods/shared_resources/xvm/res/clanicons/EU/nick'
-OUTPUT_FOLDER = '../data'
-CSV_FILE = '{folder}/ZLIST_ID.csv'.format(folder=OUTPUT_FOLDER)
+DATA_FOLDER = '../data'
+CSV_FILE = '{folder}/ZLIST_ID.csv'.format(folder=DATA_FOLDER)
 UNKNOWN_ID = -1
 
 
@@ -43,8 +45,8 @@ def get_player_ids(player_names):
             index += 1
         if batch:
             batch_ids = fetch_player_ids(batch)
-            for player_name in batch_ids:
-                player_ids[player_name] = batch_ids[player_name]
+            for player_name, player_id in batch_ids.items():
+                player_ids[player_name] = player_id
         progress = index / player_count * 100
         sys.stdout.write("\rRequesting player ids: %.2f %%" % progress)
         sys.stdout.flush()
@@ -102,36 +104,15 @@ def register_player_ids(player_ids):
 
 
 if __name__ == '__main__':
-    # Load custom application id from config
-    default_app_id = True
-    if os.path.exists(CONFIG_FILE):
-        with open(CONFIG_FILE, 'r') as config:
-            app_id_line = config.readline().rstrip()
-            if (len(app_id_line.split('=')) == 2 and
-                    app_id_line.split('=')[0] == 'WG_API_APPLICATION_ID' and
-                    app_id_line.split('=')[1] != APP_ID):
-                APP_ID = app_id_line.split('=')[1]
-                default_app_id = False
-    if default_app_id:
-        print("No custom application id could be found in",
-              "{config}.".format(config=os.path.abspath(CONFIG_FILE)), '\n'
-              "The default id will be used but the number of requests to",
-              "WG API will be limited and the results may be truncated.")
-    else:
-        print("New application id loaded from config: {id}".format(id=APP_ID))
+    input("The module player_identifier connects to the WG API to retrieve "
+          "the account ids of listed players.\n"
+          "They are then registered to file and ready to be used by following scripts.\n\n"
+          "Press ENTER to continue (or CTRL + C + ENTER to abort).\n")
 
-    # Prepare intput folder
-    if not os.path.isdir(ZLIST_FOLDER):
-        print("ZList folder not found, creating it.")
-        os.makedirs(ZLIST_FOLDER)
+    APP_ID = ui_utils.load_app_id(CONFIG_FILE, APP_ID)
+    ui_utils.prepare_folders(ZLIST_FOLDER)
+    ui_utils.prepare_files(DATA_FOLDER, CSV_FILE)
 
-    # Prepare output file
-    if not os.path.isdir(OUTPUT_FOLDER):
-        os.makedirs(OUTPUT_FOLDER)
-    if not os.path.exists(CSV_FILE):
-        open(CSV_FILE, 'w').close()
-
-    # Perform identification
     player_names = get_player_names()
     player_ids = get_player_ids(player_names)
     register_player_ids(player_ids)
