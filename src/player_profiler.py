@@ -42,7 +42,7 @@ def load_player_ids_sets(data_sets_file_paths):
     return player_ids_sets
 
 
-def plot_histogram(data_sets, stat_type, preferred_window_only=False):
+def plot_histogram(data_sets, stat_type, data_sets_names, preferred_window_only=False, *args):
     """Plot a set of statistics on an histogram."""
     BINS_IN_PREFERRED_WINDOW = 20
     COLORS = ['b', 'g', 'r', 'y', 'w']
@@ -74,17 +74,37 @@ def plot_histogram(data_sets, stat_type, preferred_window_only=False):
         bins, lb, ub = max(bins_array), min(lb_array), max(ub_array)
         weights = [[len(stats_array[0])/len(stats_array[i]) for _ in range(len(stats_array[i]))] for i in range(len(stats_array))]
         colors = COLORS[:len(stats_array)] if len(stats_array) <= len(COLORS) else None
-        labels = ["Set #%d" % i for i in range(len(data_sets))]
+        labels = ["{categories}".format(categories=', '.join(data_set_names)) for data_set_names in data_sets_names]
         x_formatter = ticker.FuncFormatter(lambda x, pos: "{value}{sign}".format(value=int(x), sign=('%' if stat_type['is_precentage'] else '')))
         y_formatter = ticker.FuncFormatter(lambda y, pos: "{value}%".format(value=int((y * 100) / len(stats_array[0]))))
 
-        plt.title("Distribution of players in regard to their {stat}".format(stat=stat_type['short_name']))
-        plt.xlabel(stat_type['short_name'])
+        plt.title("Distribution of players in regard to their {stat}".format(stat=stat_type['long_name']))
+        plt.xlabel("{stat} of players".format(stat=stat_type['long_name']))
         plt.ylabel("Player Ratio")
         plt.gca().xaxis.set_major_formatter(x_formatter)
         plt.gca().yaxis.set_major_formatter(y_formatter)
         plt.hist(x=stats_array, bins=bins, range=[lb, ub], weights=weights, color=colors, label=labels, alpha=0.75, ec='black')
         plt.legend()
+        plt.show()
+
+
+def plot_pie(data_sets, stat_type, data_set_names, *args):
+    """Plot a set of statistics on an histogram."""
+    EXPLODE_FACTOR = 0.1
+    COLORS = [(.93, .11, .14, .75), (.63, .29, .64, .75), (.99, .80, .06, .75), (.00, .00, .00, .40), (.01, .89, .93, .75)]
+    stats_count_array = []
+    for set_id, player_ids in enumerate(data_sets):
+        stats_d = get_stats(set_id, player_ids, stat_type['stats_fetcher'], stat_type['short_name'])
+        stats_count = sum(stats_d.values())
+        stats_count_array.append(stats_count)
+
+    if sum(stats_count_array) > 0:
+        colors = COLORS[:len(stats_count_array)] if len(stats_count_array) <= len(COLORS) else None
+        labels = ["{categories}".format(categories=', '.join(data_set_names)) for data_set_names in data_sets_names]
+        explode = [(1 - stats_count / sum(stats_count_array)) * EXPLODE_FACTOR for stats_count in stats_count_array]
+        plt.pie(x=stats_count_array, colors=colors, labels=labels, explode=explode, autopct='%1.1f%%', startangle=90)
+        plt.axis('equal')
+        plt.tight_layout()
         plt.show()
 
 
@@ -137,23 +157,54 @@ def get_wn8_d(player_ids):
     return wn8_d
 
 
+def get_count_d(player_ids):
+    """Compute the count of a batch of players."""
+    count_d = {player_id: 1 for player_id in player_ids}
+    return count_d
+
+
+GRAPH_TYPES = {
+    'hist': {
+        'plotter': plot_histogram,
+        'name': "histogram",
+        'is_zoomable': True,
+        'min_data_sets_number': 1,
+        'max_data_sets_number': 5,
+        'allowed_stats': ['wr', 'wn8']
+    },
+    'pie': {
+        'plotter': plot_pie,
+        'name': "pie chart",
+        'is_zoomable': False,
+        'min_data_sets_number': 1,
+        'max_data_sets_number': 20,
+        'allowed_stats': ['count']
+    },
+}
 STAT_TYPES = {
-    'Win Ratio': {
+    'wr': {
         'stats_fetcher': get_win_ratio_d,
-        'short_name': 'WR',
+        'short_name': "WR",
+        'long_name': "win ratio",
         'is_precentage': True,
         'preferred_lb': 40,
         'preferred_ub': 75,
         'mark_step': 5
     },
-    'WN8': {
+    'wn8': {
         'stats_fetcher': get_wn8_d,
-        'short_name': 'WN8',
+        'short_name': "WN8",
+        'long_name': "WN8",
         'is_precentage': False,
         'preferred_lb': 0,
         'preferred_ub': 3500,
         'mark_step': 500
     },
+    'count': {
+        'stats_fetcher': get_count_d,
+        'short_name': "count",
+        'long_name': "count",
+    }
 }
 
 if __name__ == "__main__":
@@ -171,16 +222,14 @@ if __name__ == "__main__":
     ui_utils.prepare_folders(DATA_FOLDER, CATEGORIES_FOLDER)
     ui_utils.prepare_files(DATA_FOLDER, SERVER_LIST_FILE, ZLIST_FILE)
 
-    graph_plotter, max_data_set_number = ui_utils.select_graph_type(
-        ('histogram', (plot_histogram, 5))
+    graph_properties = ui_utils.select_graph_type(
+        [(properties['name'], properties) for properties in GRAPH_TYPES.values()]
     )
-    zoom_on_preferred_window = ui_utils.select_zoom_option(
-        ('zoom', True),
-        ('do nothing', False)
-    )
-    data_sets_number = ui_utils.select_data_sets_number(1, max_data_set_number)
     stat_type = ui_utils.select_stat_type(
-        [(long_name, properties) for long_name, properties in STAT_TYPES.items()]
+        [(properties['long_name'], properties) for id, properties in STAT_TYPES.items() if id in graph_properties['allowed_stats']]
+    ) if len(graph_properties['allowed_stats']) > 1 else STAT_TYPES[graph_properties['allowed_stats'][0]]
+    data_sets_number = ui_utils.select_data_sets_number(
+        graph_properties['min_data_sets_number'], graph_properties['max_data_sets_number']
     )
     data_sets_names, data_sets_files = [], []
     for data_set_id in range(data_sets_number):
@@ -191,6 +240,10 @@ if __name__ == "__main__":
             data_set_files.append(file)
         data_sets_names.append(data_set_names)
         data_sets_files.append(data_set_files)
+    zoom_on_preferred_window = ui_utils.select_zoom_option(
+        ('zoom', True),
+        ('do nothing', False)
+    ) if graph_properties['is_zoomable'] else False
 
     data_sets = load_player_ids_sets(data_sets_files)
-    graph_plotter(data_sets, stat_type, zoom_on_preferred_window)
+    graph_properties['plotter'](data_sets, stat_type, data_sets_names, zoom_on_preferred_window)

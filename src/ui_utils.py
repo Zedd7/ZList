@@ -100,7 +100,7 @@ def select_category_option(*category_options):
     )
 
 
-def select_graph_type(*graph_types):
+def select_graph_type(graph_types):
     """Prompt a menu for the selection of the graph type."""
     return select_simple_option(
         graph_types,
