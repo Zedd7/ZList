@@ -58,13 +58,17 @@ def plot_histogram(data_sets, stat_types, data_sets_names, zoom_on_preferred_win
 
             # Compute lower and upper bound of stats
             min_stat, max_stat = min(stats_d.values()), max(stats_d.values())
-            lb = preferred_lb if zoom_on_preferred_window else int(math.floor(min_stat / mark_step) * mark_step)
-            ub = preferred_ub if zoom_on_preferred_window else int(math.ceil(max_stat / mark_step) * mark_step)
+            lb = preferred_lb if zoom_on_preferred_window and preferred_lb != 0 else int(math.floor(min_stat / mark_step) * mark_step)
+            ub = preferred_ub if zoom_on_preferred_window and preferred_ub != 0 else int(math.ceil(max_stat / mark_step) * mark_step)
             lb_array.append(lb)
             ub_array.append(ub)
 
             # Compute number of bins to approach that of preferred window
-            bins_factor = (ub - lb) / (preferred_ub - preferred_lb)
+            bins_factor = None
+            if preferred_lb < preferred_ub:
+                bins_factor = (ub - lb) / (preferred_ub - preferred_lb)
+            else:
+                bins_factor = 1
             bins = BINS_IN_PREFERRED_WINDOW * bins_factor
 
             # Compute number of bins to adjust on marks
@@ -74,6 +78,7 @@ def plot_histogram(data_sets, stat_types, data_sets_names, zoom_on_preferred_win
 
     if bins_array:
         bins, lb, ub = max(bins_array), min(lb_array), max(ub_array)
+        bin_range = [lb, ub] if lb < ub else None
         weights = [[len(stats_array[0])/len(stats_array[i]) for _ in range(len(stats_array[i]))] for i in range(len(stats_array))]
         colors = COLORS[:len(stats_array)] if len(stats_array) <= len(COLORS) else None
         labels = [', '.join(data_set_names) for data_set_names in data_sets_names]
@@ -85,7 +90,7 @@ def plot_histogram(data_sets, stat_types, data_sets_names, zoom_on_preferred_win
         plt.ylabel("Player Ratio")
         plt.gca().xaxis.set_major_formatter(x_formatter)
         plt.gca().yaxis.set_major_formatter(y_formatter)
-        plt.hist(x=stats_array, bins=bins, range=[lb, ub], weights=weights, color=colors, label=labels, alpha=0.75, ec='black')
+        plt.hist(x=stats_array, bins=bins, range=bin_range, weights=weights, color=colors, label=labels, alpha=0.75, ec='black')
         plt.legend()
         plt.show()
 
@@ -93,6 +98,8 @@ def plot_histogram(data_sets, stat_types, data_sets_names, zoom_on_preferred_win
 def plot_scatter(data_sets, stat_types, data_sets_names, zoom_on_preferred_window=False, *args):
     """Plot a set of statistics on an scatter plot."""
     exp_values_d = wn8_utils.get_exp_values_d() if any(stat_type['use_exp_values'] for stat_type in stat_types) else None
+    lb_x, ub_x = stat_types[0]['preferred_lb'], stat_types[0]['preferred_ub']
+    lb_y, ub_y = stat_types[1]['preferred_lb'], stat_types[1]['preferred_ub']
 
     for set_id, player_ids in enumerate(data_sets):
         stats_d_array = []
@@ -120,8 +127,10 @@ def plot_scatter(data_sets, stat_types, data_sets_names, zoom_on_preferred_windo
     plt.gca().xaxis.set_major_formatter(x_formatter)
     plt.gca().yaxis.set_major_formatter(y_formatter)
     if zoom_on_preferred_window:
-        plt.xlim(stat_types[0]['preferred_lb'], stat_types[0]['preferred_ub'])
-        plt.ylim(stat_types[1]['preferred_lb'], stat_types[1]['preferred_ub'])
+        if lb_x < ub_x:
+            plt.xlim(stat_types[0]['preferred_lb'], stat_types[0]['preferred_ub'])
+        if lb_y < ub_y:
+            plt.ylim(stat_types[1]['preferred_lb'], stat_types[1]['preferred_ub'])
     plt.legend()
     plt.show()
 
@@ -165,6 +174,12 @@ def get_stats(set_id, player_ids, stats_fetcher, stat_name, exp_values_d=None):
     return stats_d
 
 
+def get_wn8_d(player_ids, exp_values_d):
+    """Compute the WN8 of a batch of players."""
+    wn8_d = wn8_utils.calculate_wn8(player_ids, exp_values_d, APP_ID)
+    return wn8_d
+
+
 def get_win_ratio_d(player_ids):
     """Compute the win ratio of a batch of players."""
     payload = {
@@ -189,10 +204,25 @@ def get_win_ratio_d(player_ids):
     return win_ratio_d
 
 
-def get_wn8_d(player_ids, exp_values_d):
-    """Compute the WN8 of a batch of players."""
-    wn8_d = wn8_utils.calculate_wn8(player_ids, exp_values_d, APP_ID)
-    return wn8_d
+def get_trees_cut_d(player_ids):
+    """Compute the win ratio of a batch of players."""
+    payload = {
+        'application_id': APP_ID,
+        'account_id': ','.join(player_ids),
+        'fields': 'statistics.trees_cut'
+    }
+    response = requests.get(ACCOUNT_INFO_REQUEST_URL, params=payload)
+    response_content = response.json()
+
+    trees_cut_d = {}
+    if response_content['status'] == 'ok':
+        for player_id in player_ids:
+            player_data = response_content['data'][player_id]
+            if player_data:
+                player_stats = player_data['statistics']
+                trees_cut = player_stats['trees_cut']
+                trees_cut_d[player_id] = trees_cut
+    return trees_cut_d
 
 
 def get_count_d(player_ids):
@@ -206,7 +236,7 @@ GRAPH_TYPES = {
         'plotter': plot_histogram,
         'name': "histogram",
         'axis': ['x'],
-        'allowed_stats': ['wr', 'wn8'],
+        'allowed_stats': ['wn8', 'wr', 'trees_cut'],
         'min_data_sets_number': 1,
         'max_data_sets_number': 5,
         'is_zoomable': True,
@@ -215,7 +245,7 @@ GRAPH_TYPES = {
         'plotter': plot_scatter,
         'name': "scatter plot",
         'axis': ['x', 'y'],
-        'allowed_stats': ['wr', 'wn8'],
+        'allowed_stats': ['wn8', 'wr', 'trees_cut'],
         'min_data_sets_number': 1,
         'max_data_sets_number': 5,
         'is_zoomable': True
@@ -231,6 +261,16 @@ GRAPH_TYPES = {
     }
 }
 STAT_TYPES = {
+    'wn8': {
+        'stats_fetcher': get_wn8_d,
+        'short_name': "WN8",
+        'long_name': "WN8",
+        'use_exp_values': True,
+        'is_precentage': False,
+        'preferred_lb': 0,
+        'preferred_ub': 3500,
+        'mark_step': 500
+    },
     'wr': {
         'stats_fetcher': get_win_ratio_d,
         'short_name': "WR",
@@ -241,15 +281,15 @@ STAT_TYPES = {
         'preferred_ub': 75,
         'mark_step': 5
     },
-    'wn8': {
-        'stats_fetcher': get_wn8_d,
-        'short_name': "WN8",
-        'long_name': "WN8",
-        'use_exp_values': True,
+    'trees_cut': {
+        'stats_fetcher': get_trees_cut_d,
+        'short_name': "trees cut",
+        'long_name': "trees cut",
+        'use_exp_values': False,
         'is_precentage': False,
         'preferred_lb': 0,
-        'preferred_ub': 3500,
-        'mark_step': 500
+        'preferred_ub': 0,
+        'mark_step': 2500
     },
     'count': {
         'stats_fetcher': get_count_d,

@@ -121,7 +121,7 @@ def select_stat_type(stat_types, axis=None):
         stat_types,
         prompt,
         "statistic type",
-        1
+        2
     )
 
 
