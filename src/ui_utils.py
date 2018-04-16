@@ -110,21 +110,16 @@ def select_graph_type(graph_types):
     )
 
 
-def select_zoom_option(*zoom_options):
-    """Prompt a menu for the selection of the zoom option."""
-    return select_simple_option(
-        zoom_options,
-        "Choose between zooming on recommended window or not:",
-        "zoom option",
-        1
-    )
-
-
-def select_stat_type(stat_types):
+def select_stat_type(stat_types, axis=None):
     """Prompt a menu for the selection of the stat type."""
+    prompt = ""
+    if axis:
+        prompt = "What statistic should be plotted on the {axis}-axis of the graph ?".format(axis=axis)
+    else:
+        prompt = "What statistic should be plotted on the graph ?"
     return select_simple_option(
         stat_types,
-        "What statistic should be plotted on the graph ?",
+        prompt,
         "statistic type",
         1
     )
@@ -169,3 +164,13 @@ def select_data_files(data_set_id, data_folder, *extra_files):
         except:
             print("The value must be the number of a data file, or 0 to finish.")
     return data_files
+
+
+def select_zoom_option(*zoom_options):
+    """Prompt a menu for the selection of the zoom option."""
+    return select_simple_option(
+        zoom_options,
+        "Choose between zooming on recommended window or not:",
+        "zoom option",
+        1
+    )
