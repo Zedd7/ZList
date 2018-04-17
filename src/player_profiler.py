@@ -52,14 +52,14 @@ def plot_histogram(data_sets, stat_types, data_sets_names, zoom_on_preferred_win
 
     stats_array, bins_array, lb_array, ub_array = [], [], [], []
     for set_id, player_ids in enumerate(data_sets):
-        stats_d = get_stats(set_id, player_ids, stat_type['stats_fetcher'], stat_type['short_name'], exp_values_d)
+        stats_d = get_stats(stat_type, set_id, player_ids, exp_values_d)
         if stats_d:
             stats_array.append(list(stats_d.values()))
 
             # Compute lower and upper bound of stats
             min_stat, max_stat = min(stats_d.values()), max(stats_d.values())
-            lb = preferred_lb if zoom_on_preferred_window and preferred_lb != 0 else int(math.floor(min_stat / mark_step) * mark_step)
-            ub = preferred_ub if zoom_on_preferred_window and preferred_ub != 0 else int(math.ceil(max_stat / mark_step) * mark_step)
+            lb = preferred_lb if zoom_on_preferred_window and preferred_lb != 0 else int(math.floor(math.floor(min_stat / mark_step) * mark_step))
+            ub = preferred_ub if zoom_on_preferred_window and preferred_ub != 0 else int(math.ceil(math.ceil(max_stat / mark_step) * mark_step))
             lb_array.append(lb)
             ub_array.append(ub)
 
@@ -105,7 +105,7 @@ def plot_scatter(data_sets, stat_types, data_sets_names, zoom_on_preferred_windo
         stats_d_array = []
         for axis, stat_type in enumerate(stat_types[:2]):
             axis_exp_values_d = exp_values_d if stat_type['use_exp_values'] else None
-            stats_d = get_stats(set_id, player_ids, stat_type['stats_fetcher'], stat_type['short_name'], axis_exp_values_d)
+            stats_d = get_stats(stat_type, set_id, player_ids, axis_exp_values_d)
             stats_d_array.append(stats_d)
 
         stats_d_x, stats_d_y = stats_d_array
@@ -119,11 +119,12 @@ def plot_scatter(data_sets, stat_types, data_sets_names, zoom_on_preferred_windo
         color = COLORS[set_id] if set_id < len(COLORS) else None
         plt.scatter(x=stats_x, y=stats_y, label=label, c=color, marker='.', alpha=0.50)
 
+    stat_x_name, stat_y_name = stat_types[0]['long_name'], stat_types[1]['long_name']
     x_formatter = ticker.FuncFormatter(lambda x, pos: "{value}{sign}".format(value=int(x), sign=('%' if stat_types[0]['is_precentage'] else '')))
     y_formatter = ticker.FuncFormatter(lambda x, pos: "{value}{sign}".format(value=int(x), sign=('%' if stat_types[1]['is_precentage'] else '')))
-    plt.title("Scatter plot of {stat0} versus {stat1} of players".format(stat0=stat_types[0]['long_name'], stat1=stat_types[1]['long_name']))
-    plt.xlabel("{stat0} of players".format(stat0=stat_types[0]['long_name']))
-    plt.ylabel("{stat1} of players".format(stat1=stat_types[1]['long_name']))
+    plt.title("Scatter plot of {stat1} versus {stat0} of players".format(stat0=stat_x_name, stat1=stat_y_name))
+    plt.xlabel("{stat0} of players".format(stat0=stat_x_name))
+    plt.ylabel("{stat1} of players".format(stat1=stat_y_name))
     plt.gca().xaxis.set_major_formatter(x_formatter)
     plt.gca().yaxis.set_major_formatter(y_formatter)
     if zoom_on_preferred_window:
@@ -141,7 +142,7 @@ def plot_pie(data_sets, stat_types, data_set_names, *args):
     stat_type = stat_types[0]
     stats_count_array = []
     for set_id, player_ids in enumerate(data_sets):
-        stats_d = get_stats(set_id, player_ids, stat_type['stats_fetcher'], stat_type['short_name'])
+        stats_d = get_stats(stat_type, set_id, player_ids)
         stats_count = sum(stats_d.values())
         stats_count_array.append(stats_count)
 
@@ -156,15 +157,16 @@ def plot_pie(data_sets, stat_types, data_set_names, *args):
         plt.show()
 
 
-def get_stats(set_id, player_ids, stats_fetcher, stat_name, exp_values_d=None):
+def get_stats(stat_type, set_id, player_ids, exp_values_d=None):
     """Split the list of player ids in batches and get their stats."""
+    stats_fetcher, stat_name = stat_type['stats_fetcher'], stat_type['short_name']
     stats_d = {}
     index, batches = 0, []
     while index < len(player_ids):
         batches.append(player_ids[index:min(index + BATCH_SIZE, len(player_ids))])
         index += len(batches[-1])
     for batch_id, batch in enumerate(batches):
-        batch_d = stats_fetcher(batch, exp_values_d) if exp_values_d else stats_fetcher(batch)
+        batch_d = stats_fetcher(batch, exp_values_d) if exp_values_d else stats_fetcher(stat_type, batch)
         for player_id, stat in batch_d.items():
             stats_d[player_id] = stat
         progress = (batch_id + 1) / len(batches) * 100
@@ -180,52 +182,57 @@ def get_wn8_d(player_ids, exp_values_d):
     return wn8_d
 
 
-def get_win_ratio_d(player_ids):
-    """Compute the win ratio of a batch of players."""
+def get_total_stat_d(stat_type, player_ids):
+    """Compute the total stat of a batch of players."""
+    fields = 'statistics.all.{field}'.format(field=stat_type['field'])
+    return get_stat_d(stat_type, player_ids, fields)
+
+
+def get_average_stat_d(stat_type, player_ids):
+    """Compute the average stat of a batch of players."""
+    fields = ','.join(['statistics.all.battles', 'statistics.all.{field}'.format(field=stat_type['field'])])
+    return get_stat_d(stat_type, player_ids, fields, compute_ratio=True)
+
+
+def get_per_shot_stat_d(stat_type, player_ids):
+    """Compute the average stat per shot of a batch of players."""
+    fields = ','.join(['statistics.all.battles', 'statistics.all.shots', 'statistics.all.{field}'.format(field=stat_type['field'])])
+    return get_stat_d(stat_type, player_ids, fields, compute_ratio=False, per_shot=True)
+
+
+def get_stat_d(stat_type, player_ids, fields, compute_ratio=False, per_shot=False):
+    """Compute the stat of a batch of players."""
     payload = {
         'application_id': APP_ID,
         'account_id': ','.join(player_ids),
-        'fields': ','.join(['statistics.all.battles', 'statistics.all.wins'])
+        'fields': fields
     }
     response = requests.get(ACCOUNT_INFO_REQUEST_URL, params=payload)
     response_content = response.json()
 
-    win_ratio_d = {}
+    stat_d = {}
     if response_content['status'] == 'ok':
         for player_id in player_ids:
             player_data = response_content['data'][player_id]
             if player_data:
                 player_stats = player_data['statistics']['all']
-                battles = player_stats['battles']
-                wins = player_stats['wins']
-                win_ratio = (wins / battles) * 100 if battles > 0 else 0
-                if win_ratio > 0:
-                    win_ratio_d[player_id] = win_ratio
-    return win_ratio_d
+                stat = player_stats[stat_type['field']]
+                if compute_ratio:
+                    battles = player_stats['battles']
+                    average_stat = (stat * 100) / battles if battles > 0 else 0
+                    if average_stat > 0:
+                        stat_d[player_id] = average_stat
+                elif per_shot:
+                    shots = player_stats['shots']
+                    per_shot_stat = (stat * 100) / shots if shots > 0 else 0
+                    if per_shot_stat > 0:
+                        stat_d[player_id] = per_shot_stat
+                else:
+                    stat_d[player_id] = stat
+    return stat_d
 
 
-def get_trees_cut_d(player_ids):
-    """Compute the win ratio of a batch of players."""
-    payload = {
-        'application_id': APP_ID,
-        'account_id': ','.join(player_ids),
-        'fields': 'statistics.trees_cut'
-    }
-    response = requests.get(ACCOUNT_INFO_REQUEST_URL, params=payload)
-    response_content = response.json()
-
-    trees_cut_d = {}
-    if response_content['status'] == 'ok':
-        for player_id in player_ids:
-            player_data = response_content['data'][player_id]
-            if player_data:
-                player_stats = player_data['statistics']
-                trees_cut = player_stats['trees_cut']
-                trees_cut_d[player_id] = trees_cut
-    return trees_cut_d
-
-
-def get_count_d(player_ids):
+def get_count_d(stat_type, player_ids):
     """Compute the count of a batch of players."""
     count_d = {player_id: 1 for player_id in player_ids}
     return count_d
@@ -236,7 +243,7 @@ GRAPH_TYPES = {
         'plotter': plot_histogram,
         'name': "histogram",
         'axis': ['x'],
-        'allowed_stats': ['wn8', 'wr', 'trees_cut'],
+        'allowed_stats': ['wn8', 'wr', 'battles', 'avg_xp', 'hit_ratio', 'avg_capture', 'splash_ratio'],
         'min_data_sets_number': 1,
         'max_data_sets_number': 5,
         'is_zoomable': True,
@@ -245,7 +252,7 @@ GRAPH_TYPES = {
         'plotter': plot_scatter,
         'name': "scatter plot",
         'axis': ['x', 'y'],
-        'allowed_stats': ['wn8', 'wr', 'trees_cut'],
+        'allowed_stats': ['wn8', 'wr', 'battles', 'avg_xp', 'hit_ratio', 'avg_capture', 'splash_ratio'],
         'min_data_sets_number': 1,
         'max_data_sets_number': 5,
         'is_zoomable': True
@@ -272,7 +279,8 @@ STAT_TYPES = {
         'mark_step': 500
     },
     'wr': {
-        'stats_fetcher': get_win_ratio_d,
+        'stats_fetcher': get_average_stat_d,
+        'field': 'wins',
         'short_name': "WR",
         'long_name': "win ratio",
         'use_exp_values': False,
@@ -281,15 +289,60 @@ STAT_TYPES = {
         'preferred_ub': 75,
         'mark_step': 5
     },
-    'trees_cut': {
-        'stats_fetcher': get_trees_cut_d,
-        'short_name': "trees cut",
-        'long_name': "trees cut",
+    'battles': {
+        'stats_fetcher': get_total_stat_d,
+        'field': 'battles',
+        'short_name': "battles",
+        'long_name': "battle count",
         'use_exp_values': False,
         'is_precentage': False,
         'preferred_lb': 0,
+        'preferred_ub': 100000,
+        'mark_step': 5000
+    },
+    'avg_xp': {
+        'stats_fetcher': get_total_stat_d,
+        'field': 'battle_avg_xp',
+        'short_name': "average xp",
+        'long_name': "average experience points",
+        'use_exp_values': False,
+        'is_precentage': False,
+        'preferred_lb': 0,
+        'preferred_ub': 1200,
+        'mark_step': 60
+    },
+    'hit_ratio': {
+        'stats_fetcher': get_per_shot_stat_d,
+        'field': 'hits',
+        'short_name': "hit ratio",
+        'long_name': "direct hit ratio",
+        'use_exp_values': False,
+        'is_precentage': True,
+        'preferred_lb': 20,
+        'preferred_ub': 100,
+        'mark_step': 4
+    },
+    'avg_capture': {
+        'stats_fetcher': get_average_stat_d,
+        'field': 'capture_points',
+        'short_name': "average capture",
+        'long_name': "average capture points",
+        'use_exp_values': False,
+        'is_precentage': True,
+        'preferred_lb': 0,
+        'preferred_ub': 300,
+        'mark_step': 15
+    },
+    'splash_ratio': {
+        'stats_fetcher': get_average_stat_d,
+        'field': 'explosion_hits',
+        'short_name': "splash ratio",
+        'long_name': "splash received ratio",
+        'use_exp_values': False,
+        'is_precentage': True,
+        'preferred_lb': 0,
         'preferred_ub': 0,
-        'mark_step': 2500
+        'mark_step': 5
     },
     'count': {
         'stats_fetcher': get_count_d,
@@ -341,7 +394,7 @@ if __name__ == "__main__":
     zoom_on_preferred_window = ui_utils.select_zoom_option(
         ('zoom', True),
         ('do nothing', False)
-    ) if graph_properties['is_zoomable'] else False
+    ) if graph_properties['is_zoomable'] and any(stat_type['preferred_lb'] < stat_type['preferred_ub'] for stat_type in stat_types) else False
 
     data_sets = load_player_ids_sets(data_sets_files)
     graph_properties['plotter'](data_sets, stat_types, data_sets_names, zoom_on_preferred_window)
