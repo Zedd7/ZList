@@ -43,7 +43,7 @@ def prepare_files(folder, *files):
             open(file, "w").close()
 
 
-def select_simple_option(options, menu_prompt, type, recommended):
+def select_simple_option(options, menu_prompt, type, recommended=None):
     """Prompt a menu for the selection of a simple option."""
     selection = -1
     print(menu_prompt)
@@ -51,7 +51,10 @@ def select_simple_option(options, menu_prompt, type, recommended):
         print("  {number} : {name}".format(number=(i + 1), name=option[0]))
     while selection not in range(1, len(options) + 1):
         try:
-            selection = int(input("Number of the selection (recommended: %d) : " % recommended))
+            if recommended:
+                selection = int(input("Number of the selection (recommended: %d) : " % recommended))
+            else:
+                selection = int(input("Number of the selection : "))
             if selection not in range(1, len(options) + 1):
                 raise ValueError
         except:
@@ -78,6 +81,50 @@ def select_offset_option(*offset_options):
         "search method",
         2
     )
+
+
+def select_filters(available_filters):
+    """Prompt a menu for the selection of filters."""
+    filter_selection, selected_filters = -1, []
+    print("Select filters for the search of account ids.")
+    print("  {number} : {name}".format(number=0, name="finish selection"))
+    for i, available_filter in enumerate(available_filters):
+        print("  {number} : {name}".format(number=(i + 1), name=available_filter['name']))
+    while filter_selection != 0:
+        try:
+            filter_selection = int(input("Number of the filter : "))
+            if filter_selection not in range(0, len(available_filters) + 1):
+                raise ValueError
+            elif filter_selection == 0:
+                filter_names = ', '.join([selected_filter['name'] for selected_filter in selected_filters])
+                print("Selected filter(s) :", filter_names if filter_names else "none")
+            elif available_filters[filter_selection - 1] not in selected_filters:
+                selected_filters.append(available_filters[filter_selection - 1])
+        except:
+            print("The value must be the number of a filter, or 0 to finish.")
+
+    for selected_filter in selected_filters:
+        threshold = -1
+        while threshold < 0:
+            try:
+                threshold = int(input("Threshold for the {name} : ".format(name=selected_filter['name'])))
+                if threshold < 0:
+                    raise ValueError
+                selected_filter['threshold'] = threshold
+            except:
+                print("The value must be a positive integer.")
+        select_greater = select_simple_option(
+            [
+                ("{name} > {threshold}".format(name=selected_filter['name'], threshold=threshold), True),
+                ("{name} < {threshold}".format(name=selected_filter['name'], threshold=threshold), False)
+            ],
+            "Should accounts be kept for greater or lower {name} than {threshold} ?".format(name=selected_filter['name'], threshold=threshold),
+            "filter option",
+            None
+        )
+        selected_filter['select_greater'] = select_greater
+
+    return selected_filters
 
 
 def select_repair_option(*repair_options):
@@ -112,16 +159,17 @@ def select_graph_type(graph_types):
 
 def select_stat_type(stat_types, axis=None):
     """Prompt a menu for the selection of the stat type."""
-    prompt = ""
+    prompt, recommended = "", None
     if axis:
         prompt = "What statistic should be plotted on the {axis}-axis of the graph ?".format(axis=axis)
     else:
         prompt = "What statistic should be plotted on the graph ?"
+        recommended = 2
     return select_simple_option(
         stat_types,
         prompt,
         "statistic type",
-        2
+        recommended
     )
 
 
@@ -156,7 +204,7 @@ def select_data_files(data_set_id, data_folder, *extra_files):
             data_option_selection = int(input("Number of the selection : "))
             if data_option_selection not in range(0, len(data_options) + 1):
                 raise ValueError
-            if data_option_selection == 0:
+            elif data_option_selection == 0:
                 data_file_names = ', '.join([data_option[0] for data_option in data_files])
                 print("Selected data file(s) :", data_file_names if data_file_names else "none")
             elif data_options[data_option_selection - 1] not in data_files:
