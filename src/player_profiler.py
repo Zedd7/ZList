@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import requests
 
+from stat_enum import *
 import ui_utils
 import wn8_utils
 
@@ -149,11 +150,17 @@ def plot_pie(data_sets, stat_types, data_sets_names, *args):
             stat_count_d[stat] += 1
 
     if stat_count_d:
-        colors = COLORS[:len(stat_count_d)] if len(stat_count_d) <= len(COLORS) else None
-        labels = stat_count_d.keys()
-        explode = [(1 - stat_count / sum(stat_count_d.values())) * EXPLODE_FACTOR for stat_count in stat_count_d.values()]
+        groups = stat_count_d.keys()
+        if stat_type['sort_by_count']:
+            groups = sorted(groups, key=lambda group: stat_count_d[group])
+        else:
+            groups = sorted(groups)
+        counts = [stat_count_d[group] for group in groups]
+        colors = COLORS[:len(groups)] if len(groups) <= len(COLORS) else None
+        labels = [group.upper() for group in groups]
+        explodes = [(1 - count / sum(counts)) * EXPLODE_FACTOR for group, count in zip(groups, counts)]
         plt.title("Pie chart of the {stat} of players".format(stat=stat_type['long_name']))
-        plt.pie(x=stat_count_d.values(), colors=colors, labels=labels, explode=explode, autopct='%1.1f%%', startangle=90)
+        plt.pie(x=counts, colors=colors, labels=labels, explode=explodes, autopct='%1.1f%%', startangle=90)
         plt.axis('equal')
         plt.tight_layout()
         plt.show()
@@ -192,20 +199,30 @@ def get_wn8_d(player_ids, exp_values_d):
 
 def get_total_stat_d(stat_type, player_ids):
     """Compute the total stat of a batch of players."""
-    fields = 'statistics.all.{field}'.format(field=stat_type['field'])
-    return get_stat_d(stat_type, player_ids, fields)
+    return get_stat_d(stat_type, player_ids, stat_type['field'])
 
 
 def get_average_stat_d(stat_type, player_ids):
     """Compute the average stat of a batch of players."""
-    fields = ','.join(['statistics.all.battles', 'statistics.all.{field}'.format(field=stat_type['field'])])
-    return get_stat_d(stat_type, player_ids, fields, compute_ratio=True)
+    fields = ','.join([stat_type['field'], stat_type['dependency_field']])
+    return get_stat_d(stat_type, player_ids, fields, compute_ratio=True, per_shot=False)
 
 
 def get_per_shot_stat_d(stat_type, player_ids):
     """Compute the average stat per shot of a batch of players."""
-    fields = ','.join(['statistics.all.shots', 'statistics.all.{field}'.format(field=stat_type['field'])])
+    fields = ','.join([stat_type['field'], stat_type['dependency_field']])
     return get_stat_d(stat_type, player_ids, fields, compute_ratio=False, per_shot=True)
+
+
+def get_count_d(stat_type, set_name, player_ids):
+    """Compute the count of a batch of players for a given set."""
+    count_d = {player_id: set_name for player_id in player_ids}
+    return count_d
+
+
+def get_language_d(stat_type, set_name, player_ids):
+    """Compute the count of a batch of players for a given set."""
+    return get_stat_d(stat_type, player_ids, stat_type['field'])
 
 
 def get_stat_d(stat_type, player_ids, fields, compute_ratio=False, per_shot=False):
@@ -223,15 +240,14 @@ def get_stat_d(stat_type, player_ids, fields, compute_ratio=False, per_shot=Fals
         for player_id in player_ids:
             player_data = response_content['data'][player_id]
             if player_data:
-                player_stats = player_data['statistics']['all']
-                stat = player_stats[stat_type['field']]
+                stat = get_nested_stat(stat_type['field'], player_data)
                 if compute_ratio:
-                    battles = player_stats['battles']
+                    battles = get_nested_stat(stat_type['dependency_field'], player_data)
                     average_stat = (stat * 100) / battles if battles > 0 else 0
                     if average_stat > 0:
                         stat_d[player_id] = average_stat
                 elif per_shot:
-                    shots = player_stats['shots']
+                    shots = get_nested_stat(stat_type['dependency_field'], player_data)
                     per_shot_stat = (stat * 100) / shots if shots > 0 else 0
                     if per_shot_stat > 0:
                         stat_d[player_id] = per_shot_stat
@@ -240,10 +256,12 @@ def get_stat_d(stat_type, player_ids, fields, compute_ratio=False, per_shot=Fals
     return stat_d
 
 
-def get_count_d(stat_type, set_name, player_ids):
-    """Compute the count of a batch of players for a given set."""
-    count_d = {player_id: set_name for player_id in player_ids}
-    return count_d
+def get_nested_stat(nested_field, player_data):
+    """Get the stat for the given nested field."""
+    stat = player_data
+    for field_part in nested_field.split('.'):
+        stat = stat[field_part]
+    return stat
 
 
 GRAPH_TYPES = {
@@ -269,112 +287,12 @@ GRAPH_TYPES = {
         'plotter': plot_pie,
         'name': "pie chart",
         'axis': ['circle'],
-        'allowed_stats': ['count'],
+        'allowed_stats': ['count', 'language'],
         'min_data_sets_number': 1,
         'max_data_sets_number': 10,
         'is_zoomable': False
     }
 }
-STAT_TYPES = {
-    'wn8': {
-        'stats_fetcher': get_wn8_d,
-        'short_name': "WN8",
-        'long_name': "WN8",
-        'use_exp_values': True,
-        'group_by_value': False,
-        'is_precentage': False,
-        'preferred_lb': 0,
-        'preferred_ub': 3500,
-        'mark_step': 500
-    },
-    'wr': {
-        'stats_fetcher': get_average_stat_d,
-        'field': 'wins',
-        'short_name': "WR",
-        'long_name': "win ratio",
-        'use_exp_values': False,
-        'group_by_value': False,
-        'is_precentage': True,
-        'preferred_lb': 40,
-        'preferred_ub': 75,
-        'mark_step': 5
-    },
-    'battles': {
-        'stats_fetcher': get_total_stat_d,
-        'field': 'battles',
-        'short_name': "battles",
-        'long_name': "battle count",
-        'use_exp_values': False,
-        'group_by_value': False,
-        'is_precentage': False,
-        'preferred_lb': 0,
-        'preferred_ub': 100000,
-        'mark_step': 5000
-    },
-    'avg_xp': {
-        'stats_fetcher': get_total_stat_d,
-        'field': 'battle_avg_xp',
-        'short_name': "average xp",
-        'long_name': "average experience points",
-        'use_exp_values': False,
-        'group_by_value': False,
-        'is_precentage': False,
-        'preferred_lb': 0,
-        'preferred_ub': 1200,
-        'mark_step': 60
-    },
-    'hit_ratio': {
-        'stats_fetcher': get_per_shot_stat_d,
-        'field': 'hits',
-        'short_name': "hit ratio",
-        'long_name': "direct hit ratio",
-        'use_exp_values': False,
-        'group_by_value': False,
-        'is_precentage': True,
-        'preferred_lb': 20,
-        'preferred_ub': 100,
-        'mark_step': 4
-    },
-    'avg_capture': {
-        'stats_fetcher': get_average_stat_d,
-        'field': 'capture_points',
-        'short_name': "average capture",
-        'long_name': "average capture points",
-        'use_exp_values': False,
-        'group_by_value': False,
-        'is_precentage': True,
-        'preferred_lb': 0,
-        'preferred_ub': 300,
-        'mark_step': 15
-    },
-    'splash_ratio': {
-        'stats_fetcher': get_average_stat_d,
-        'field': 'explosion_hits',
-        'short_name': "splash ratio",
-        'long_name': "splash received ratio",
-        'use_exp_values': False,
-        'group_by_value': False,
-        'is_precentage': True,
-        'preferred_lb': 0,
-        'preferred_ub': 0,
-        'mark_step': 5
-    },
-    'count': {
-        'stats_fetcher': get_count_d,
-        'short_name': "count",
-        'long_name': "count",
-        'use_exp_values': False,
-        'group_by_value': True
-    }
-}
-
-"""
-    'language': {
-        'stats_fetcher': get_language_d,
-        'short_name': "language",
-        'long_name': "client language",
-    },
-"""
 
 if __name__ == "__main__":
     input("The module player_profiler helps you plotting statistics of players "
@@ -396,13 +314,13 @@ if __name__ == "__main__":
     stat_types = []
     if len(graph_properties['axis']) == 1:
         stat_types.append(ui_utils.select_stat_type(
-            [(properties['long_name'], properties) for id, properties in STAT_TYPES.items() if id in graph_properties['allowed_stats']]
-        ) if len(graph_properties['allowed_stats']) > 1 else STAT_TYPES[graph_properties['allowed_stats'][0]])
+            [(properties['long_name'], properties) for id, properties in STAT_ENUM.items() if id in graph_properties['allowed_stats']]
+        ) if len(graph_properties['allowed_stats']) > 1 else STAT_ENUM[graph_properties['allowed_stats'][0]])
     else:
         for axis in graph_properties['axis']:
             stat_types.append(ui_utils.select_stat_type(
-                [(properties['long_name'], properties) for id, properties in STAT_TYPES.items() if id in graph_properties['allowed_stats']], axis
-            ) if len(graph_properties['allowed_stats']) > 1 else STAT_TYPES[graph_properties['allowed_stats'][0]])
+                [(properties['long_name'], properties) for id, properties in STAT_ENUM.items() if id in graph_properties['allowed_stats']], axis
+            ) if len(graph_properties['allowed_stats']) > 1 else STAT_ENUM[graph_properties['allowed_stats'][0]])
     data_sets_number = ui_utils.select_data_sets_number(
         graph_properties['min_data_sets_number'], graph_properties['max_data_sets_number']
     )
