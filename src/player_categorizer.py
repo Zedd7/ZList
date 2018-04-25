@@ -13,7 +13,7 @@ import ui_utils
 ZLIST_FOLDER = '../res_mods/mods/shared_resources/xvm/res/clanicons/EU/nick'
 DATA_FOLDER = '../data'
 CATEGORIES_FOLDER = '{data_folder}/categories'.format(data_folder=DATA_FOLDER)
-ZLIST_FILE = '{data_folder}/ZLIST_ID.csv'.format(data_folder=DATA_FOLDER)
+ZLIST_FILE = '{data_folder}/ZLIST.csv'.format(data_folder=DATA_FOLDER)
 CATEGORY_FILE_FORMAT = '{categories_folder}/%s.csv'.format(categories_folder=CATEGORIES_FOLDER)
 MAIN_CATEGORIES = ["ASSHOLE", "CAMPER", "GOLD", "REROLL", "TEAMKILL"]
 

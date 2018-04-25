@@ -19,8 +19,6 @@ ACCOUNT_INFO_REQUEST_URL = 'https://api.worldoftanks.eu/wot/account/info/'
 BATCH_SIZE = 100
 DATA_FOLDER = '../data'
 CATEGORIES_FOLDER = '{data_folder}/categories'.format(data_folder=DATA_FOLDER)
-ZLIST_FILE = '{data_folder}/ZLIST_ID.csv'.format(data_folder=DATA_FOLDER)
-SERVER_LIST_FILE = '{data_folder}/SERVER_ID.csv'.format(data_folder=DATA_FOLDER)
 CATEGORY_FILE_FORMAT = '{categories_folder}/%s.csv'.format(categories_folder=CATEGORIES_FOLDER)
 UNKNOWN_ID = -1
 COLORS = [(.93, .11, .14, .75), (.63, .29, .64, .75), (.99, .80, .06, .75), (.00, .00, .00, .40), (.01, .89, .93, .75)]
@@ -364,7 +362,6 @@ if __name__ == "__main__":
 
     APP_ID = ui_utils.load_app_id(CONFIG_FILE, APP_ID)
     ui_utils.prepare_folders(DATA_FOLDER, CATEGORIES_FOLDER)
-    ui_utils.prepare_files(DATA_FOLDER, SERVER_LIST_FILE, ZLIST_FILE)
 
     graph_properties = ui_utils.select_graph_type(
         [(properties['name'], properties) for properties in GRAPH_TYPES.values()]
@@ -385,7 +382,7 @@ if __name__ == "__main__":
     data_sets_names, data_sets_files = [], []
     for data_set_id in range(data_sets_number):
         data_set_names, data_set_files = [], []
-        data_options = ui_utils.select_data_files(data_set_id, CATEGORIES_FOLDER, SERVER_LIST_FILE, ZLIST_FILE)
+        data_options = ui_utils.select_data_files(data_set_id, CATEGORIES_FOLDER, DATA_FOLDER)
         for name, file in data_options:
             data_set_names.append(name)
             data_set_files.append(file)

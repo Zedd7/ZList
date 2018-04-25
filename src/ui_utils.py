@@ -98,8 +98,8 @@ def select_filters(available_filters):
             elif filter_selection == 0:
                 filter_names = ', '.join([selected_filter['name'] for selected_filter in selected_filters])
                 print("Selected filter(s) :", filter_names if filter_names else "none")
-            elif available_filters[filter_selection - 1] not in selected_filters:
-                selected_filters.append(available_filters[filter_selection - 1])
+            else:
+                selected_filters.append(dict(available_filters[filter_selection - 1]))
         except:
             print("The value must be the number of a filter, or 0 to finish.")
 
@@ -189,11 +189,13 @@ def select_data_sets_number(min_data_sets=1, max_data_sets=1):
     return data_sets_number
 
 
-def select_data_files(data_set_id, data_folder, *extra_files):
+def select_data_files(data_set_id, categories_folder, extras_folder):
     """Prompt a menu for the selection of data files."""
-    categories = [(file_name.rstrip('.csv'), os.path.join(data_folder, file_name)) for file_name in os.listdir(data_folder)]
-    extras_options = [(os.path.basename(file_path).rstrip('_ID.csv'), file_path) for file_path in extra_files]
-    data_options = categories + extras_options
+    categories_files = [os.path.join(categories_folder, file_name) for file_name in os.listdir(categories_folder)]
+    extra_files = [os.path.join(extras_folder, file_name) for file_name in os.listdir(extras_folder)]
+    categories = [(os.path.basename(file).rstrip('.csv'), file) for file in categories_files if os.path.isfile(file)]
+    extras = [(os.path.basename(file).rstrip('.csv'), file) for file in extra_files if os.path.isfile(file)]
+    data_options = categories + extras
     data_option_selection, data_files = -1, []
     print("Select one or several data files to include to the data set # %d." % (data_set_id + 1))
     print("  {number} : {name}".format(number=0, name="Finish selection"))

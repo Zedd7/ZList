@@ -16,7 +16,7 @@ ACCOUNT_INFO_REQUEST_URL = 'https://api.worldoftanks.eu/wot/account/list/'
 BATCH_SIZE = 100
 ZLIST_FOLDER = '../res_mods/mods/shared_resources/xvm/res/clanicons/EU/nick'
 DATA_FOLDER = '../data'
-CSV_FILE = '{folder}/ZLIST_ID.csv'.format(folder=DATA_FOLDER)
+CSV_FILE = '{folder}/ZLIST.csv'.format(folder=DATA_FOLDER)
 UNKNOWN_ID = -1
 
 
