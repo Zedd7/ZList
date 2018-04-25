@@ -35,7 +35,6 @@ def load_account_id_d():
 
 def list_accounts(account_id_d, step, use_random_offset=True, filters=[]):
     """List a fraction of all existing accounts ids in provided range."""
-    print(filters)
     loaded_account_id_amount, filtered_account_amount = len(account_id_d), 0
     offset = random.randint(0, step) if use_random_offset else 0
     account_id = ID_LOWER_BOUND + offset

@@ -50,7 +50,7 @@ def plot_histogram(data_sets, stat_types, data_sets_names, zoom_on_preferred_win
 
     stats_array, bins_array, lb_array, ub_array = [], [], [], []
     for set_id, player_ids in enumerate(data_sets):
-        stats_d = get_stats(stat_type, set_id, player_ids, exp_values_d)
+        stats_d = get_stats(stat_type, set_id, None, player_ids, exp_values_d)
         if stats_d:
             stats_array.append(list(stats_d.values()))
 
@@ -103,7 +103,7 @@ def plot_scatter(data_sets, stat_types, data_sets_names, zoom_on_preferred_windo
         stats_d_array = []
         for axis, stat_type in enumerate(stat_types[:2]):
             axis_exp_values_d = exp_values_d if stat_type['use_exp_values'] else None
-            stats_d = get_stats(stat_type, set_id, player_ids, axis_exp_values_d)
+            stats_d = get_stats(stat_type, set_id, None, player_ids, axis_exp_values_d)
             stats_d_array.append(stats_d)
 
         stats_d_x, stats_d_y = stats_d_array
@@ -134,28 +134,32 @@ def plot_scatter(data_sets, stat_types, data_sets_names, zoom_on_preferred_windo
     plt.show()
 
 
-def plot_pie(data_sets, stat_types, data_set_names, *args):
-    """Plot a set of statistics on an histogram."""
+def plot_pie(data_sets, stat_types, data_sets_names, *args):
+    """Group players by statistic value on a pie chart."""
     EXPLODE_FACTOR = 0.1
     stat_type = stat_types[0]
-    stats_count_array = []
-    for set_id, player_ids in enumerate(data_sets):
-        stats_d = get_stats(stat_type, set_id, player_ids)
-        stats_count = sum(stats_d.values())
-        stats_count_array.append(stats_count)
 
-    if sum(stats_count_array) > 0:
-        colors = COLORS[:len(stats_count_array)] if len(stats_count_array) <= len(COLORS) else None
-        labels = [', '.join(data_set_names) for data_set_names in data_sets_names]
-        explode = [(1 - stats_count / sum(stats_count_array)) * EXPLODE_FACTOR for stats_count in stats_count_array]
+    stat_count_d = {}
+    for set_id, player_ids in enumerate(data_sets):
+        set_name = ', '.join(data_sets_names[set_id])
+        stats_d = get_stats(stat_type, set_id, set_name, player_ids)
+        for player_id, stat in stats_d.items():
+            if stat not in stat_count_d:
+                stat_count_d[stat] = 0
+            stat_count_d[stat] += 1
+
+    if stat_count_d:
+        colors = COLORS[:len(stat_count_d)] if len(stat_count_d) <= len(COLORS) else None
+        labels = stat_count_d.keys()
+        explode = [(1 - stat_count / sum(stat_count_d.values())) * EXPLODE_FACTOR for stat_count in stat_count_d.values()]
         plt.title("Pie chart of the {stat} of players".format(stat=stat_type['long_name']))
-        plt.pie(x=stats_count_array, colors=colors, labels=labels, explode=explode, autopct='%1.1f%%', startangle=90)
+        plt.pie(x=stat_count_d.values(), colors=colors, labels=labels, explode=explode, autopct='%1.1f%%', startangle=90)
         plt.axis('equal')
         plt.tight_layout()
         plt.show()
 
 
-def get_stats(stat_type, set_id, player_ids, exp_values_d=None):
+def get_stats(stat_type, set_id, set_name, player_ids, exp_values_d=None):
     """Split the list of player ids in batches and get their stats."""
     stats_fetcher, stat_name = stat_type['stats_fetcher'], stat_type['short_name']
     stats_d = {}
@@ -164,7 +168,13 @@ def get_stats(stat_type, set_id, player_ids, exp_values_d=None):
         batches.append(player_ids[index:min(index + BATCH_SIZE, len(player_ids))])
         index += len(batches[-1])
     for batch_id, batch in enumerate(batches):
-        batch_d = stats_fetcher(batch, exp_values_d) if exp_values_d else stats_fetcher(stat_type, batch)
+        batch_d = {}
+        if stat_type['use_exp_values']:
+            batch_d = stats_fetcher(batch, exp_values_d)
+        elif stat_type['group_by_value']:
+            batch_d = stats_fetcher(stat_type, set_name, batch)
+        else:
+            batch_d = stats_fetcher(stat_type, batch)
         for player_id, stat in batch_d.items():
             stats_d[player_id] = stat
         progress = (batch_id + 1) / len(batches) * 100
@@ -194,7 +204,7 @@ def get_average_stat_d(stat_type, player_ids):
 
 def get_per_shot_stat_d(stat_type, player_ids):
     """Compute the average stat per shot of a batch of players."""
-    fields = ','.join(['statistics.all.battles', 'statistics.all.shots', 'statistics.all.{field}'.format(field=stat_type['field'])])
+    fields = ','.join(['statistics.all.shots', 'statistics.all.{field}'.format(field=stat_type['field'])])
     return get_stat_d(stat_type, player_ids, fields, compute_ratio=False, per_shot=True)
 
 
@@ -230,9 +240,9 @@ def get_stat_d(stat_type, player_ids, fields, compute_ratio=False, per_shot=Fals
     return stat_d
 
 
-def get_count_d(stat_type, player_ids):
-    """Compute the count of a batch of players."""
-    count_d = {player_id: 1 for player_id in player_ids}
+def get_count_d(stat_type, set_name, player_ids):
+    """Compute the count of a batch of players for a given set."""
+    count_d = {player_id: set_name for player_id in player_ids}
     return count_d
 
 
@@ -271,6 +281,7 @@ STAT_TYPES = {
         'short_name': "WN8",
         'long_name': "WN8",
         'use_exp_values': True,
+        'group_by_value': False,
         'is_precentage': False,
         'preferred_lb': 0,
         'preferred_ub': 3500,
@@ -282,6 +293,7 @@ STAT_TYPES = {
         'short_name': "WR",
         'long_name': "win ratio",
         'use_exp_values': False,
+        'group_by_value': False,
         'is_precentage': True,
         'preferred_lb': 40,
         'preferred_ub': 75,
@@ -293,6 +305,7 @@ STAT_TYPES = {
         'short_name': "battles",
         'long_name': "battle count",
         'use_exp_values': False,
+        'group_by_value': False,
         'is_precentage': False,
         'preferred_lb': 0,
         'preferred_ub': 100000,
@@ -304,6 +317,7 @@ STAT_TYPES = {
         'short_name': "average xp",
         'long_name': "average experience points",
         'use_exp_values': False,
+        'group_by_value': False,
         'is_precentage': False,
         'preferred_lb': 0,
         'preferred_ub': 1200,
@@ -315,6 +329,7 @@ STAT_TYPES = {
         'short_name': "hit ratio",
         'long_name': "direct hit ratio",
         'use_exp_values': False,
+        'group_by_value': False,
         'is_precentage': True,
         'preferred_lb': 20,
         'preferred_ub': 100,
@@ -326,6 +341,7 @@ STAT_TYPES = {
         'short_name': "average capture",
         'long_name': "average capture points",
         'use_exp_values': False,
+        'group_by_value': False,
         'is_precentage': True,
         'preferred_lb': 0,
         'preferred_ub': 300,
@@ -337,6 +353,7 @@ STAT_TYPES = {
         'short_name': "splash ratio",
         'long_name': "splash received ratio",
         'use_exp_values': False,
+        'group_by_value': False,
         'is_precentage': True,
         'preferred_lb': 0,
         'preferred_ub': 0,
@@ -346,8 +363,18 @@ STAT_TYPES = {
         'stats_fetcher': get_count_d,
         'short_name': "count",
         'long_name': "count",
+        'use_exp_values': False,
+        'group_by_value': True
     }
 }
+
+"""
+    'language': {
+        'stats_fetcher': get_language_d,
+        'short_name': "language",
+        'long_name': "client language",
+    },
+"""
 
 if __name__ == "__main__":
     input("The module player_profiler helps you plotting statistics of players "
