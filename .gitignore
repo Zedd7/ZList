@@ -1,6 +1,8 @@
 # ZList
 data/
-res/
+misc/
+res/config.txt
+res/wn8_exp_values.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
