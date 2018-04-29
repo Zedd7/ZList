@@ -13,18 +13,24 @@ from helpers.bound_effects import ModelBoundEffects, StaticSceneBoundEffects
 import os
 
 
-ZLIST_FOLDER = './res_mods/mods/shared_resources/xvm/res/clanicons/EU/nick'
 LOG_FILE = './GOLD_USER.csv'
+gold_users = {}
 
 
 def prepare_log_file():
     if not os.path.exists(LOG_FILE):
         open(LOG_FILE, 'w').close()
+    with open(LOG_FILE, 'r') as log_file:
+        for line in log_file.readline():
+            if line:
+                player_name, account_id = line.rstrip().split(',')
+                gold_users[player_name] = account_id
 
 
 def log_gold_user(player_name, account_id):
     with open(LOG_FILE, 'a') as log_file:
         log_file.write("%s,%s\n" % (player_name, account_id))
+    gold_users[player_name] = account_id
 
 
 class ModifiedValueManager:
@@ -164,7 +170,8 @@ def restore_with_mgr_and_modify_effect(modified_file_name_mgr, effects_list, att
                 if shell_type in gold_ammo_types and should_log_attacker(player, players, shell_type, gun, attacker_id):
                     attacker_name = players[attacker_id]['name']
                     attacker_dbid = players[attacker_id]['accountDBID']
-                    log_gold_user(attacker_name, attacker_dbid)
+                    if attacker_name not in gold_users:
+                        log_gold_user(attacker_name, attacker_dbid)
 
 
 prepare_log_file()
