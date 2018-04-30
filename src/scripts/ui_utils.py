@@ -127,6 +127,16 @@ def select_filters(available_filters):
     return selected_filters
 
 
+def select_remove_option(*remove_options):
+    """Prompt a menu for the selection of the remove option."""
+    return select_simple_option(
+        remove_options,
+        "Should added player names be removed from log file ?",
+        "remove option",
+        1
+    )
+
+
 def select_repair_option(*repair_options):
     """Prompt a menu for the selection of the repair option."""
     return select_simple_option(

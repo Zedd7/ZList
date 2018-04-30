@@ -22,8 +22,9 @@ def prepare_log_file():
         open(LOG_FILE, 'w').close()
     with open(LOG_FILE, 'r') as log_file:
         for line in log_file.readline():
-            if line:
-                player_name, account_id = line.rstrip().split(',')
+            player_data = line.rstrip().split(',')
+            if len(player_data) > 1:
+                player_name, account_id = player_data
                 gold_users[player_name] = account_id
 
 

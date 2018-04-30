@@ -6,8 +6,7 @@ import os
 import sys
 import csv
 
-from PIL import Image
-
+import image_utils
 import ui_utils
 
 ZLIST_FOLDER = '../../res/zlist'
@@ -15,11 +14,11 @@ DATA_FOLDER = '../../data'
 CATEGORIES_FOLDER = '{data_folder}/categories'.format(data_folder=DATA_FOLDER)
 ZLIST_FILE = '{data_folder}/ZLIST.csv'.format(data_folder=DATA_FOLDER)
 CATEGORY_FILE_FORMAT = '{categories_folder}/%s.csv'.format(categories_folder=CATEGORIES_FOLDER)
-MAIN_CATEGORIES = ["ASSHOLE", "CAMPER", "GOLD", "REROLL", "TEAMKILL"]
+MAIN_CATEGORIES = ['ASSHOLE', 'CAMPER', 'GOLD', 'REROLL', 'TEAMKILL']
 
 
 def load_player_ids():
-    """Load dictionary of known mappings for player names and their id."""
+    """Load a dictionary of known mappings for player names and their id."""
     print("Loading registered player ids from CSV file... ", end='', flush=True)
     player_ids = {}
     with open(ZLIST_FILE, 'r', newline='') as csv_file:
@@ -30,20 +29,6 @@ def load_player_ids():
     return player_ids
 
 
-def get_category_palette():
-    """Map colors to main categories."""
-    print("Mapping colors to main categories... ", end='', flush=True)
-    category_palette = {}
-    for category in MAIN_CATEGORIES:
-        file_path = os.path.join(ZLIST_FOLDER, ".{category}.png".format(category=category))
-        if os.path.isfile(file_path):
-            image = Image.open(file_path)
-            image, _ = get_repaired_image(image)
-            category_palette[category] = sorted(image.getcolors(), reverse=True)[0][1]
-    print("Done.")
-    return category_palette
-
-
 def get_player_image_d(should_repair_images=False):
     """Load the PNG file assigned to each player."""
     player_image_d, repaired_image_file_name_d = {}, {}
@@ -51,8 +36,7 @@ def get_player_image_d(should_repair_images=False):
     for index, file_name in enumerate(file_names):
         if file_name[0] != '.':
             player_name = file_name.rstrip('.png')
-            image = Image.open(os.path.join(ZLIST_FOLDER, file_name))
-            image, repaired = get_repaired_image(image)
+            image, repaired = image_utils.get_player_image(ZLIST_FOLDER, file_name)
             player_image_d[player_name] = image
             if repaired:
                 repaired_image_file_name_d[file_name] = image
@@ -73,49 +57,13 @@ def get_player_image_d(should_repair_images=False):
     return player_image_d
 
 
-def get_repaired_image(image):
-    """Replace minor colors of an image by its major colors."""
-    image = image.convert('RGBA')
-    allowed_conversion_count, repaired = len(image.getcolors()) - 1, False
-    while len(get_major_minor_colors(image)[1]) > 0 and allowed_conversion_count > 0:
-        image = image.convert('P', palette=Image.ADAPTIVE, colors=(len(image.getcolors()) - 1))
-        image = image.convert('RGBA')  # For convert to palette fix and final output
-        allowed_conversion_count -= 1
-        repaired = True
-    return image, repaired
-
-
-def get_major_minor_colors(image):
-    """Assign colors to major or minor color category."""
-    major_colors, minor_colors = [], []
-    image_size = image.size[0] * image.size[1]
-    colors_data = image.getcolors()
-    exp_color_ratio = 1 / len(colors_data)  # 1/n for n-colors image
-    for color_data in colors_data:
-        pixel_count, color = color_data
-        color_ratio = pixel_count / image_size
-        if color_ratio > 0.5 * exp_color_ratio:  # Major if more than half of exp ratio
-            major_colors.append(color)
-        else:
-            minor_colors.append(color)
-    return major_colors, minor_colors
-
-
 def get_player_categories_d(player_image_d, category_palette):
     """Identify the categories of players."""
-    player_categories_d = {player_name: [] for player_name in player_image_d}
+    player_categories_d = {}
     index, player_count = 0, len(player_image_d)
     for player_name, player_image in player_image_d.items():
-        for _, player_color in player_image.getcolors():
-            closest_category, min_diff = None, float('inf')
-            for category, category_color in category_palette.items():
-                r_diff = abs(player_color[0] - category_color[0])
-                g_diff = abs(player_color[1] - category_color[1])
-                b_diff = abs(player_color[2] - category_color[2])
-                color_diff = r_diff + g_diff + b_diff
-                if color_diff < min_diff:
-                    closest_category, min_diff = category, color_diff
-            player_categories_d[player_name].append(closest_category)
+        categories = image_utils.get_player_categories(player_image, category_palette)
+        player_categories_d[player_name] = categories
         progress = (index + 1) / player_count * 100
         sys.stdout.write("\rIdentifying player categories: %.2f %%" % progress)
         sys.stdout.flush()
@@ -182,7 +130,7 @@ if __name__ == '__main__':
     )
 
     player_ids = load_player_ids()
-    category_palette = get_category_palette()
+    category_palette = image_utils.get_category_palette(ZLIST_FOLDER, MAIN_CATEGORIES)
     player_image_d = get_player_image_d(should_repair_images)
     player_categories_d = get_player_categories_d(player_image_d, category_palette)
     register_player_categories(player_categories_d, player_ids, use_complex_categories)

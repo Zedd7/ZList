@@ -26,10 +26,14 @@ Complex categories (e.g.: ASSHOLE_GOLD) can be created by merging main categorie
 
 ### ZList mod
 
-#### Installation
-
 This list requires that [XVM](https://modxvm.com/en/download-xvm/) is installed in order to work. The activation of statistics is however not necessary.
-To install the ZList, extract the content of this archive in the game folder et replace all files if asked.
+To install the ZList, extract the content of this archive in the game folder and replace all files if asked.
+
+### Gold Logger mod
+
+To install the Gold Logger mod, extract the content of this archive in the game folder (if this was not already done) and replace all files if asked.
+Depending on the release that you have downloaded, the Gold Logger mod is either not included (ZList only), included as standalone (no dependency required but conflicts with the Gold Ammo Visibility mod) or included in compatibility mode (requires the Gold Ammo Visibility mod to be installed).
+Once installed, the mod will simply log all gold users met in battle (in-game or in replay) in the file GOLD_USER.csv located at the root of the game folder.
 
 ### Python scripts
 
@@ -52,6 +56,7 @@ You are now free to play with the different Python scripts. To do so, enter "pyt
 Please note that each script has its own purpose and can depend on the output of another :
 
 - player_lister.py : Register account ids of random players from the cluster in a CSV file.
+- player_logger.py : Add players listed by the Gold Logger mod to the ZList.
 - player_identifier.py : Register account ids of players from the ZList in a CSV file.
 - player_categorizer.py : Register account ids of players from the ZList according to their assigned color in a CSV file.
 - player_profiler.py : Display customs graphs of players' statistics.
@@ -59,10 +64,6 @@ Please note that each script has its own purpose and can depend on the output of
 As such, they should be executed in the following order : player_lister, player_identifier.py, player_categorizer, player_profiler.
 
 By default, each script connects itself to the Wargaming API by using the application id "demo" which is open to all but is limited in the number of requests. Thus, results of different scripts may be truncated. If you wish to perform an analysis on the entirety of the ZList, it is necessary that you create an application through the tab "[My Applications](https://developers.wargaming.net/applications/)" and that you replace "demo" by the id of your new application in the config file located at "res/config.txt".
-
-### ZListLogger mod
-
-Work in progress.
 
 ## Français
 
@@ -90,10 +91,14 @@ Des catégories complexes (ex.: ASSHOLE_GOLD) peuvent être crées en fusionnant
 
 ### ZList mod
 
-#### Installation
-
 Cette liste nécessite qu'[XVM](http://www.modxvm.com/fr/telecharger-xvm/) soit installé pour fonctionner. L'activation des statistiques n'est cependant pas nécessaire.
 Pour installer la ZList, extrayez le contenu de cette archive dans le dossier de jeu et remplacez tous les fichiers si demandé.
+
+### Gold Logger mod
+
+Pour installer le mod Gold Logger, extrayez le contenu de cette archiche dans le dossier de jeu (si ce n'était pas déjà fait) et remplacez tous les fichiers si demandé.
+Selon l'archiche que vous avez téléchargée, le mod Gold Logger est soit non-inclu (ZList uniquement), inclu en standalone (aucune dépendence requise mais entre en conflit avec le mod Gold Ammo Visibility) ou inclu en mode compatibilité (requiert que le mod Gold Ammo Visibility soit installé).
+Une fois installé, le mod va simplement enregistrer tous les utilisateurs de la gold rencontrés en partie (en jeu ou dans un replay) dans le fichier GOLD_USER.csv situé à la racine du dossier de jeu.
 
 ### Scripts Python
 
@@ -116,6 +121,7 @@ Vous êtes maintenant libre de jouer avec les différents scripts Python. Pour c
 Veuillez notez que chaque script a sa propre fonction et peut dépendre du résultat d'un autre :
 
 - player_lister.py : Enregistre les ids de compte de joueurs aléatoires du cluster dans un fichier CSV.
+- player_logger.py : Ajoute les joueurs listés par le mod Gold Logger à la ZList.
 - player_identifier.py : Enregistre les ids de compte des joueurs de la ZList dans un fichier CSV.
 - player_categorizer.py : Enregistre les ids de compte des joueurs de la ZList selon la catégorie qui leur est assignée dans un fichier CSV.
 - player_profiler.py : Affiche des graphiques personnalisés des statistiques des joueurs.
@@ -123,7 +129,3 @@ Veuillez notez que chaque script a sa propre fonction et peut dépendre du résu
 Cela pris en considération, ils devraient être exécutés dans l'ordre suivant : player_lister, player_identifier.py, player_categorizer, player_profiler.
 
 Par défaut, chaque script se connecte à l'API de Wargaming en utilisant l'id d'application "demo" qui est accessible à tous mais est limitée en nombre de requêtes. Ainsi, les résultats des différents scripts peuvent être tronqués. Si vous souhaitez effectuer une analyse sur l'entièreté de la ZList, il est nécessaire que vous créiez une application via l'onglet "[My Applications](https://developers.wargaming.net/applications/)" et que vous remplaciez "demo" par l'id de votre nouvelle application dans le fichier de config situé dans "res/config.txt".
-
-### ZListLogger mod
-
-Work in progress.
