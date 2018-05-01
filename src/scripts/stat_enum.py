@@ -4,7 +4,7 @@
 
 import player_profiler as profiler
 
-STAT_ENUM = {
+STATS = {
     'wn8': {
         'stats_fetcher': profiler.get_wn8_d,
         'short_name': "WN8",
@@ -28,6 +28,18 @@ STAT_ENUM = {
         'preferred_lb': 40,
         'preferred_ub': 75,
         'mark_step': 5
+    },
+    'global_rating': {
+        'stats_fetcher': profiler.get_total_stat_d,
+        'short_name': "global rating",
+        'long_name': "global rating",
+        'field': 'global_rating',
+        'use_exp_values': False,
+        'group_by_value': False,
+        'is_precentage': False,
+        'preferred_lb': 0,
+        'preferred_ub': 12000,
+        'mark_step': 600
     },
     'battles': {
         'stats_fetcher': profiler.get_total_stat_d,

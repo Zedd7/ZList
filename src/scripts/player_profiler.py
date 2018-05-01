@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import requests
 
-from stat_enum import *
+import stat_enum
 import ui_utils
 import wn8_utils
 
@@ -177,11 +177,11 @@ def get_stats(stat_type, set_id, set_name, player_ids, exp_values_d=None):
     for batch_id, batch in enumerate(batches):
         batch_d = {}
         if stat_type['use_exp_values']:
-            batch_d = stats_fetcher(batch, exp_values_d)
+            batch_d = stats_fetcher(batch, exp_values_d, APP_ID)
         elif stat_type['group_by_value']:
-            batch_d = stats_fetcher(stat_type, set_name, batch)
+            batch_d = stats_fetcher(batch, stat_type, APP_ID, set_name)
         else:
-            batch_d = stats_fetcher(stat_type, batch)
+            batch_d = stats_fetcher(batch, stat_type, APP_ID)
         for player_id, stat in batch_d.items():
             stats_d[player_id] = stat
         progress = (batch_id + 1) / len(batches) * 100
@@ -191,44 +191,44 @@ def get_stats(stat_type, set_id, set_name, player_ids, exp_values_d=None):
     return stats_d
 
 
-def get_wn8_d(player_ids, exp_values_d):
+def get_wn8_d(player_ids, exp_values_d, app_id):
     """Compute the WN8 of a batch of players."""
-    wn8_d = wn8_utils.calculate_wn8(player_ids, exp_values_d, APP_ID)
+    wn8_d = wn8_utils.calculate_wn8(player_ids, exp_values_d, app_id)
     return wn8_d
 
 
-def get_total_stat_d(stat_type, player_ids):
+def get_total_stat_d(player_ids, stat_type, app_id):
     """Compute the total stat of a batch of players."""
-    return get_stat_d(stat_type, player_ids, stat_type['field'])
+    return get_stat_d(player_ids, stat_type, stat_type['field'], app_id)
 
 
-def get_average_stat_d(stat_type, player_ids):
+def get_average_stat_d(player_ids, stat_type, app_id):
     """Compute the average stat of a batch of players."""
     fields = ','.join([stat_type['field'], stat_type['dependency_field']])
-    return get_stat_d(stat_type, player_ids, fields, compute_ratio=True, per_shot=False)
+    return get_stat_d(player_ids, stat_type, fields, app_id, compute_ratio=True, per_shot=False)
 
 
-def get_per_shot_stat_d(stat_type, player_ids):
+def get_per_shot_stat_d(player_ids, stat_type, app_id):
     """Compute the average stat per shot of a batch of players."""
     fields = ','.join([stat_type['field'], stat_type['dependency_field']])
-    return get_stat_d(stat_type, player_ids, fields, compute_ratio=False, per_shot=True)
+    return get_stat_d(player_ids, stat_type, fields, app_id, compute_ratio=False, per_shot=True)
 
 
-def get_count_d(stat_type, set_name, player_ids):
+def get_count_d(player_ids, stat_type, app_id, set_name):
     """Compute the count of a batch of players for a given set."""
     count_d = {player_id: set_name for player_id in player_ids}
     return count_d
 
 
-def get_language_d(stat_type, set_name, player_ids):
+def get_language_d(player_ids, stat_type, app_id, set_name):
     """Compute the count of a batch of players for a given set."""
-    return get_stat_d(stat_type, player_ids, stat_type['field'])
+    return get_stat_d(player_ids, stat_type, stat_type['field'], app_id)
 
 
-def get_stat_d(stat_type, player_ids, fields, compute_ratio=False, per_shot=False):
+def get_stat_d(player_ids, stat_type, fields, app_id, compute_ratio=False, per_shot=False):
     """Compute the stat of a batch of players."""
     payload = {
-        'application_id': APP_ID,
+        'application_id': app_id,
         'account_id': ','.join(player_ids),
         'fields': fields
     }
@@ -269,7 +269,7 @@ GRAPH_TYPES = {
         'plotter': plot_histogram,
         'name': "histogram",
         'axis': ['x'],
-        'allowed_stats': ['wn8', 'wr', 'battles', 'avg_xp', 'hit_ratio', 'avg_capture', 'splash_ratio'],
+        'allowed_stats': ['wn8', 'wr', 'global_rating', 'battles', 'avg_xp', 'hit_ratio', 'avg_capture', 'splash_ratio'],
         'min_data_sets_number': 1,
         'max_data_sets_number': 5,
         'is_zoomable': True,
@@ -278,7 +278,7 @@ GRAPH_TYPES = {
         'plotter': plot_scatter,
         'name': "scatter plot",
         'axis': ['x', 'y'],
-        'allowed_stats': ['wn8', 'wr', 'battles', 'avg_xp', 'hit_ratio', 'avg_capture', 'splash_ratio'],
+        'allowed_stats': ['wn8', 'wr', 'global_rating', 'battles', 'avg_xp', 'hit_ratio', 'avg_capture', 'splash_ratio'],
         'min_data_sets_number': 1,
         'max_data_sets_number': 5,
         'is_zoomable': True
@@ -314,13 +314,13 @@ if __name__ == "__main__":
     stat_types = []
     if len(graph_properties['axis']) == 1:
         stat_types.append(ui_utils.select_stat_type(
-            [(properties['long_name'], properties) for id, properties in STAT_ENUM.items() if id in graph_properties['allowed_stats']]
-        ) if len(graph_properties['allowed_stats']) > 1 else STAT_ENUM[graph_properties['allowed_stats'][0]])
+            [(properties['long_name'], properties) for id, properties in stat_enum.STATS.items() if id in graph_properties['allowed_stats']]
+        ) if len(graph_properties['allowed_stats']) > 1 else stat_enum.STATS[graph_properties['allowed_stats'][0]])
     else:
         for axis in graph_properties['axis']:
             stat_types.append(ui_utils.select_stat_type(
-                [(properties['long_name'], properties) for id, properties in STAT_ENUM.items() if id in graph_properties['allowed_stats']], axis
-            ) if len(graph_properties['allowed_stats']) > 1 else STAT_ENUM[graph_properties['allowed_stats'][0]])
+                [(properties['long_name'], properties) for id, properties in stat_enum.STATS.items() if id in graph_properties['allowed_stats']], axis
+            ) if len(graph_properties['allowed_stats']) > 1 else stat_enum.STATS[graph_properties['allowed_stats'][0]])
     data_sets_number = ui_utils.select_data_sets_number(
         graph_properties['min_data_sets_number'], graph_properties['max_data_sets_number']
     )

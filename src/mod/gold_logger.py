@@ -14,24 +14,25 @@ import os
 
 
 LOG_FILE = './GOLD_USER.csv'
-gold_users = {}
+gold_users = set()
 
 
 def prepare_log_file():
     if not os.path.exists(LOG_FILE):
         open(LOG_FILE, 'w').close()
+
     with open(LOG_FILE, 'r') as log_file:
         for line in log_file.readline():
             player_data = line.rstrip().split(',')
             if len(player_data) > 1:
-                player_name, account_id = player_data
-                gold_users[player_name] = account_id
+                player_name, _ = player_data
+                gold_users.add(player_name)
 
 
 def log_gold_user(player_name, account_id):
     with open(LOG_FILE, 'a') as log_file:
         log_file.write("%s,%s\n" % (player_name, account_id))
-    gold_users[player_name] = account_id
+    gold_users.add(player_name)
 
 
 class ModifiedValueManager:
