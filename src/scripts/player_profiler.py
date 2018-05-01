@@ -81,7 +81,7 @@ def plot_histogram(data_sets, stat_types, data_sets_names, zoom_on_preferred_win
         weights = [[len(stats_array[0])/len(stats_array[i]) for _ in range(len(stats_array[i]))] for i in range(len(stats_array))]
         colors = COLORS[:len(stats_array)] if len(stats_array) <= len(COLORS) else None
         labels = [', '.join(data_set_names) for data_set_names in data_sets_names]
-        x_formatter = ticker.FuncFormatter(lambda x, pos: "{value}{sign}".format(value=int(x), sign=('%' if stat_type['is_precentage'] else '')))
+        x_formatter = ticker.FuncFormatter(lambda x, pos: "{value}{sign}".format(value=int(x), sign=('%' if stat_type['is_percentage'] else '')))
         y_formatter = ticker.FuncFormatter(lambda y, pos: "{value}%".format(value=int((y * 100) / len(stats_array[0]))))
 
         plt.title("Distribution of players in regard to their {stat}".format(stat=stat_type['long_name']))
@@ -119,8 +119,8 @@ def plot_scatter(data_sets, stat_types, data_sets_names, zoom_on_preferred_windo
         plt.scatter(x=stats_x, y=stats_y, label=label, c=color, marker='.', alpha=0.50)
 
     stat_x_name, stat_y_name = stat_types[0]['long_name'], stat_types[1]['long_name']
-    x_formatter = ticker.FuncFormatter(lambda x, pos: "{value}{sign}".format(value=int(x), sign=('%' if stat_types[0]['is_precentage'] else '')))
-    y_formatter = ticker.FuncFormatter(lambda x, pos: "{value}{sign}".format(value=int(x), sign=('%' if stat_types[1]['is_precentage'] else '')))
+    x_formatter = ticker.FuncFormatter(lambda x, pos: "{value}{sign}".format(value=int(x), sign=('%' if stat_types[0]['is_percentage'] else '')))
+    y_formatter = ticker.FuncFormatter(lambda x, pos: "{value}{sign}".format(value=int(x), sign=('%' if stat_types[1]['is_percentage'] else '')))
     plt.title("Scatter plot of {stat1} versus {stat0} of players".format(stat0=stat_x_name, stat1=stat_y_name))
     plt.xlabel("{stat0} of players".format(stat0=stat_x_name))
     plt.ylabel("{stat1} of players".format(stat1=stat_y_name))
@@ -243,12 +243,16 @@ def get_stat_d(player_ids, stat_type, fields, app_id, compute_ratio=False, per_s
                 stat = get_nested_stat(stat_type['field'], player_data)
                 if compute_ratio:
                     battles = get_nested_stat(stat_type['dependency_field'], player_data)
-                    average_stat = (stat * 100) / battles if battles > 0 else 0
+                    average_stat = stat / battles if battles > 0 else 0
+                    if stat_type['is_percentage']:
+                        average_stat *= 100
                     if average_stat > 0:
                         stat_d[player_id] = average_stat
                 elif per_shot:
                     shots = get_nested_stat(stat_type['dependency_field'], player_data)
-                    per_shot_stat = (stat * 100) / shots if shots > 0 else 0
+                    per_shot_stat = stat / shots if shots > 0 else 0
+                    if stat_type['is_percentage']:
+                        per_shot_stat *= 100
                     if per_shot_stat > 0:
                         stat_d[player_id] = per_shot_stat
                 else:
@@ -269,7 +273,9 @@ GRAPH_TYPES = {
         'plotter': plot_histogram,
         'name': "histogram",
         'axis': ['x'],
-        'allowed_stats': ['wn8', 'wr', 'global_rating', 'battles', 'avg_xp', 'avg_assist', 'hit_ratio', 'avg_capture', 'splash_ratio'],
+        'allowed_stats': ['wn8', 'wr', 'global_rating', 'battles',
+                          'avg_xp', 'avg_assist', 'avg_blocked', 'hit_ratio',
+                          'avg_capture', 'splash_ratio'],
         'min_data_sets_number': 1,
         'max_data_sets_number': 5,
         'is_zoomable': True,
@@ -278,7 +284,9 @@ GRAPH_TYPES = {
         'plotter': plot_scatter,
         'name': "scatter plot",
         'axis': ['x', 'y'],
-        'allowed_stats': ['wn8', 'wr', 'global_rating', 'battles', 'avg_xp', 'avg_assist', 'hit_ratio', 'avg_capture', 'splash_ratio'],
+        'allowed_stats': ['wn8', 'wr', 'global_rating', 'battles',
+                          'avg_xp', 'avg_assist', 'avg_blocked', 'hit_ratio',
+                          'avg_capture', 'splash_ratio'],
         'min_data_sets_number': 1,
         'max_data_sets_number': 5,
         'is_zoomable': True

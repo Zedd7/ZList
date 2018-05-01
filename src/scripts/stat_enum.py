@@ -5,16 +5,40 @@
 import player_profiler as profiler
 
 STATS = {
+    'battles': {
+        'stats_fetcher': profiler.get_total_stat_d,
+        'short_name': "battles",
+        'long_name': "battle count",
+        'field': 'statistics.all.battles',
+        'use_exp_values': False,
+        'group_by_value': False,
+        'is_percentage': False,
+        'preferred_lb': 0,
+        'preferred_ub': 100000,
+        'mark_step': 5000
+    },
     'wn8': {
         'stats_fetcher': profiler.get_wn8_d,
         'short_name': "WN8",
         'long_name': "WN8",
         'use_exp_values': True,
         'group_by_value': False,
-        'is_precentage': False,
+        'is_percentage': False,
         'preferred_lb': 0,
         'preferred_ub': 3500,
         'mark_step': 500
+    },
+    'global_rating': {
+        'stats_fetcher': profiler.get_total_stat_d,
+        'short_name': "global rating",
+        'long_name': "global rating",
+        'field': 'global_rating',
+        'use_exp_values': False,
+        'group_by_value': False,
+        'is_percentage': False,
+        'preferred_lb': 0,
+        'preferred_ub': 12000,
+        'mark_step': 600
     },
     'wr': {
         'stats_fetcher': profiler.get_average_stat_d,
@@ -24,34 +48,10 @@ STATS = {
         'dependency_field': 'statistics.all.battles',
         'use_exp_values': False,
         'group_by_value': False,
-        'is_precentage': True,
+        'is_percentage': True,
         'preferred_lb': 40,
         'preferred_ub': 75,
         'mark_step': 5
-    },
-    'global_rating': {
-        'stats_fetcher': profiler.get_total_stat_d,
-        'short_name': "global rating",
-        'long_name': "global rating",
-        'field': 'global_rating',
-        'use_exp_values': False,
-        'group_by_value': False,
-        'is_precentage': False,
-        'preferred_lb': 0,
-        'preferred_ub': 12000,
-        'mark_step': 600
-    },
-    'battles': {
-        'stats_fetcher': profiler.get_total_stat_d,
-        'short_name': "battles",
-        'long_name': "battle count",
-        'field': 'statistics.all.battles',
-        'use_exp_values': False,
-        'group_by_value': False,
-        'is_precentage': False,
-        'preferred_lb': 0,
-        'preferred_ub': 100000,
-        'mark_step': 5000
     },
     'avg_xp': {
         'stats_fetcher': profiler.get_total_stat_d,
@@ -60,7 +60,7 @@ STATS = {
         'field': 'statistics.all.battle_avg_xp',
         'use_exp_values': False,
         'group_by_value': False,
-        'is_precentage': False,
+        'is_percentage': False,
         'preferred_lb': 0,
         'preferred_ub': 1200,
         'mark_step': 60
@@ -72,7 +72,19 @@ STATS = {
         'field': 'statistics.all.avg_damage_assisted',
         'use_exp_values': False,
         'group_by_value': False,
-        'is_precentage': False,
+        'is_percentage': False,
+        'preferred_lb': 0,
+        'preferred_ub': 800,
+        'mark_step': 40
+    },
+    'avg_blocked': {
+        'stats_fetcher': profiler.get_total_stat_d,
+        'short_name': "average blocked",
+        'long_name': "average damage blocked",
+        'field': 'statistics.all.avg_damage_blocked',
+        'use_exp_values': False,
+        'group_by_value': False,
+        'is_percentage': False,
         'preferred_lb': 0,
         'preferred_ub': 800,
         'mark_step': 40
@@ -85,7 +97,7 @@ STATS = {
         'dependency_field': 'statistics.all.shots',
         'use_exp_values': False,
         'group_by_value': False,
-        'is_precentage': True,
+        'is_percentage': True,
         'preferred_lb': 20,
         'preferred_ub': 100,
         'mark_step': 4
@@ -98,10 +110,10 @@ STATS = {
         'dependency_field': 'statistics.all.battles',
         'use_exp_values': False,
         'group_by_value': False,
-        'is_precentage': True,
+        'is_percentage': False,
         'preferred_lb': 0,
-        'preferred_ub': 300,
-        'mark_step': 15
+        'preferred_ub': 4,
+        'mark_step': 1
     },
     'splash_ratio': {
         'stats_fetcher': profiler.get_average_stat_d,
@@ -111,7 +123,7 @@ STATS = {
         'dependency_field': 'statistics.all.battles',
         'use_exp_values': False,
         'group_by_value': False,
-        'is_precentage': True,
+        'is_percentage': True,
         'preferred_lb': 0,
         'preferred_ub': 0,
         'mark_step': 5

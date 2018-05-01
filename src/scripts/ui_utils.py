@@ -174,7 +174,8 @@ def select_stat_type(stat_types, axis=None):
         prompt = "What statistic should be plotted on the {axis}-axis of the graph ?".format(axis=axis)
     else:
         prompt = "What statistic should be plotted on the graph ?"
-        recommended = 2
+        stat_names = [name for name, _ in stat_types]
+        recommended = stat_names.index('win ratio') + 1
     return select_simple_option(
         stat_types,
         prompt,
