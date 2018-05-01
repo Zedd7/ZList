@@ -75,8 +75,8 @@ STATS = {
         'group_by_value': False,
         'is_percentage': False,
         'preferred_lb': 0,
-        'preferred_ub': 3500,
-        'mark_step': 175
+        'preferred_ub': 3000,
+        'mark_step': 150
     },
     'avg_assist': {
         'stats_fetcher': profiler.get_total_stat_d,
@@ -101,6 +101,19 @@ STATS = {
         'preferred_lb': 0,
         'preferred_ub': 800,
         'mark_step': 40
+    },
+    'avg_kill': {
+        'stats_fetcher': profiler.get_average_stat_d,
+        'short_name': "average kill",
+        'long_name': "average vehicles destroyed",
+        'field': 'statistics.all.frags',
+        'dependency_field': 'statistics.all.battles',
+        'use_exp_values': False,
+        'group_by_value': False,
+        'is_percentage': False,
+        'preferred_lb': 0,
+        'preferred_ub': 2,
+        'mark_step': 1
     },
     'hit_ratio': {
         'stats_fetcher': profiler.get_per_shot_stat_d,
