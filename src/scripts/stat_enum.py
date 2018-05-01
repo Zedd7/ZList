@@ -115,6 +115,19 @@ STATS = {
         'preferred_ub': 4,
         'mark_step': 1
     },
+    'avg_defense': {
+        'stats_fetcher': profiler.get_average_stat_d,
+        'short_name': "average defense",
+        'long_name': "average defense points",
+        'field': 'statistics.all.dropped_capture_points',
+        'dependency_field': 'statistics.all.battles',
+        'use_exp_values': False,
+        'group_by_value': False,
+        'is_percentage': False,
+        'preferred_lb': 0,
+        'preferred_ub': 4,
+        'mark_step': 1
+    },
     'splash_ratio': {
         'stats_fetcher': profiler.get_average_stat_d,
         'short_name': "splash ratio",

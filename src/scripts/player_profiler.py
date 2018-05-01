@@ -275,7 +275,7 @@ GRAPH_TYPES = {
         'axis': ['x'],
         'allowed_stats': ['wn8', 'wr', 'global_rating', 'battles',
                           'avg_xp', 'avg_assist', 'avg_blocked', 'hit_ratio',
-                          'avg_capture', 'splash_ratio'],
+                          'avg_capture', 'avg_defense', 'splash_ratio'],
         'min_data_sets_number': 1,
         'max_data_sets_number': 5,
         'is_zoomable': True,
@@ -286,7 +286,7 @@ GRAPH_TYPES = {
         'axis': ['x', 'y'],
         'allowed_stats': ['wn8', 'wr', 'global_rating', 'battles',
                           'avg_xp', 'avg_assist', 'avg_blocked', 'hit_ratio',
-                          'avg_capture', 'splash_ratio'],
+                          'avg_capture', 'avg_defense', 'splash_ratio'],
         'min_data_sets_number': 1,
         'max_data_sets_number': 5,
         'is_zoomable': True
