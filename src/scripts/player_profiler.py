@@ -86,7 +86,7 @@ def plot_histogram(data_sets, stat_types, data_sets_names, zoom_on_preferred_win
 
         plt.title("Distribution of players in regard to their {stat}".format(stat=stat_type['long_name']))
         plt.xlabel("{stat} of players".format(stat=stat_type['long_name']))
-        plt.ylabel("Player Ratio")
+        plt.ylabel("player ratio")
         plt.gca().xaxis.set_major_formatter(x_formatter)
         plt.gca().yaxis.set_major_formatter(y_formatter)
         plt.hist(x=stats_array, bins=bins, range=bin_range, weights=weights, color=colors, label=labels, alpha=0.75, ec='black')
@@ -273,8 +273,8 @@ GRAPH_TYPES = {
         'plotter': plot_histogram,
         'name': "histogram",
         'axis': ['x'],
-        'allowed_stats': ['wn8', 'wr', 'global_rating', 'battles',
-                          'avg_xp', 'avg_assist', 'avg_blocked', 'hit_ratio',
+        'allowed_stats': ['battles', 'wn8', 'global_rating', 'wr', 'avg_xp',
+                          'avg_damage', 'avg_assist', 'avg_blocked', 'hit_ratio',
                           'avg_capture', 'avg_defense', 'splash_ratio'],
         'min_data_sets_number': 1,
         'max_data_sets_number': 5,
@@ -284,8 +284,8 @@ GRAPH_TYPES = {
         'plotter': plot_scatter,
         'name': "scatter plot",
         'axis': ['x', 'y'],
-        'allowed_stats': ['wn8', 'wr', 'global_rating', 'battles',
-                          'avg_xp', 'avg_assist', 'avg_blocked', 'hit_ratio',
+        'allowed_stats': ['battles', 'wn8', 'global_rating', 'wr', 'avg_xp',
+                          'avg_damage', 'avg_assist', 'avg_blocked', 'hit_ratio',
                           'avg_capture', 'avg_defense', 'splash_ratio'],
         'min_data_sets_number': 1,
         'max_data_sets_number': 5,

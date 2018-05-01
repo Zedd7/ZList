@@ -65,6 +65,19 @@ STATS = {
         'preferred_ub': 1200,
         'mark_step': 60
     },
+    'avg_damage': {
+        'stats_fetcher': profiler.get_average_stat_d,
+        'short_name': "average damage",
+        'long_name': "average damage dealt",
+        'field': 'statistics.all.damage_dealt',
+        'dependency_field': 'statistics.all.battles',
+        'use_exp_values': False,
+        'group_by_value': False,
+        'is_percentage': False,
+        'preferred_lb': 0,
+        'preferred_ub': 3500,
+        'mark_step': 175
+    },
     'avg_assist': {
         'stats_fetcher': profiler.get_total_stat_d,
         'short_name': "average assist",
@@ -125,7 +138,7 @@ STATS = {
         'group_by_value': False,
         'is_percentage': False,
         'preferred_lb': 0,
-        'preferred_ub': 4,
+        'preferred_ub': 3,
         'mark_step': 1
     },
     'splash_ratio': {
