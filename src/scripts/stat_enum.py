@@ -65,6 +65,18 @@ STATS = {
         'preferred_ub': 1200,
         'mark_step': 60
     },
+    'avg_assist': {
+        'stats_fetcher': profiler.get_total_stat_d,
+        'short_name': "average assist",
+        'long_name': "average damage assisted",
+        'field': 'statistics.all.avg_damage_assisted',
+        'use_exp_values': False,
+        'group_by_value': False,
+        'is_precentage': False,
+        'preferred_lb': 0,
+        'preferred_ub': 800,
+        'mark_step': 40
+    },
     'hit_ratio': {
         'stats_fetcher': profiler.get_per_shot_stat_d,
         'short_name': "hit ratio",

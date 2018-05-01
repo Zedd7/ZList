@@ -269,7 +269,7 @@ GRAPH_TYPES = {
         'plotter': plot_histogram,
         'name': "histogram",
         'axis': ['x'],
-        'allowed_stats': ['wn8', 'wr', 'global_rating', 'battles', 'avg_xp', 'hit_ratio', 'avg_capture', 'splash_ratio'],
+        'allowed_stats': ['wn8', 'wr', 'global_rating', 'battles', 'avg_xp', 'avg_assist', 'hit_ratio', 'avg_capture', 'splash_ratio'],
         'min_data_sets_number': 1,
         'max_data_sets_number': 5,
         'is_zoomable': True,
@@ -278,7 +278,7 @@ GRAPH_TYPES = {
         'plotter': plot_scatter,
         'name': "scatter plot",
         'axis': ['x', 'y'],
-        'allowed_stats': ['wn8', 'wr', 'global_rating', 'battles', 'avg_xp', 'hit_ratio', 'avg_capture', 'splash_ratio'],
+        'allowed_stats': ['wn8', 'wr', 'global_rating', 'battles', 'avg_xp', 'avg_assist', 'hit_ratio', 'avg_capture', 'splash_ratio'],
         'min_data_sets_number': 1,
         'max_data_sets_number': 5,
         'is_zoomable': True
