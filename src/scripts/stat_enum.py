@@ -115,6 +115,19 @@ STATS = {
         'preferred_ub': 2,
         'mark_step': 1
     },
+    'avg_spot': {
+        'stats_fetcher': profiler.get_average_stat_d,
+        'short_name': "average spot",
+        'long_name': "average vehicles spotted",
+        'field': 'statistics.all.spotted',
+        'dependency_field': 'statistics.all.battles',
+        'use_exp_values': False,
+        'group_by_value': False,
+        'is_percentage': False,
+        'preferred_lb': 0,
+        'preferred_ub': 3,
+        'mark_step': 1
+    },
     'hit_ratio': {
         'stats_fetcher': profiler.get_per_shot_stat_d,
         'short_name': "hit ratio",
