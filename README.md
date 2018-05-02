@@ -37,12 +37,12 @@ Once installed, the mod will simply log all gold users met in battle (in-game or
 
 ### Python scripts
 
-A few Python scripts are provided in this repository for you to draw some graphs based on the names and categories present in the ZList.
+A few Python scripts are provided in this repository for you to draw some graphs based on the names and categories present in the ZList or the server.
 As they are not included in the archive downloadable from the release page, it is required to clone the repository in order to get them.
 
 #### Toolset acquisition (Windows)
 
-1. Download and install [Git](https://git-scm.com/downloads). Customize git to your liking but make sure to check "Use Git from the Windows Command Prompt" when asked.
+1. Download and install [Git](https://git-scm.com/downloads). Customize git to your liking but make sure to check "Use Git from the Windows Command Prompt" when asked. (Alternatively, don't use Git if you know how to download the repository and naviguate to the right folder in the terminal.)
 2. Download and install [Python 3.6](https://www.python.org/downloads/) or higher. Check "Add Python 3.6 to PATH" and click "Install Now".
 3. Open a terminal with administrator privileges (search for "cmd" in the Start Menu > right click on it > "Execute as administator")
 4. Enter `pip install requests Pillow matplotlib`
@@ -102,12 +102,12 @@ Une fois installé, le mod va simplement enregistrer tous les utilisateurs de la
 
 ### Scripts Python
 
-Quelques scripts Python sont fournis dans ce dépôt afin que vous puissiez dessiner quelques graphiques basés sur les noms and catégories présents dans la ZList.
+Quelques scripts Python sont fournis dans ce dépôt afin que vous puissiez dessiner quelques graphiques basés sur les noms and catégories présents dans la ZList ou le serveur.
 Etant donné qu'ils ne sont pas inclus dans l'archive téléchargeable depuis la page "releases", il est nécessaire de clôner le dépôt afin de les obtenir.
 
 #### Acquision des outils (Windows)
 
-1. Téléchargez et installez [Git](https://git-scm.com/downloads). Customisez git selon vos goûts mais prenez garde à cocher "Use Git from the Windows Command Prompt" lorsque demandé.
+1. Téléchargez et installez [Git](https://git-scm.com/downloads). Customisez git selon vos goûts mais prenez garde à cocher "Use Git from the Windows Command Prompt" lorsque demandé. (Alternativement, n'utilisez pas Git si vous savez comment télécharger le dépôt et naviguer vers le bon dossier dans le terminal.)
 2. Téléchargez et installez [Python 3.6](https://www.python.org/downloads/) ou ultérieur. Cochez "Add Python 3.6 to PATH" et cliquez sur "Install Now".
 3. Ouvrez un terminal avec les privilèges administrateur (cherchez "cmd" dans le Menu Démarrer > clic droit dessus > "Exécuter en tant qu'administrateur")
 4. Entrez `pip install requests Pillow matplotlib`
