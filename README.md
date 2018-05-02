@@ -96,8 +96,8 @@ Pour installer la ZList, extrayez le contenu de cette archive dans le dossier de
 
 ### Gold Logger mod
 
-Pour installer le mod Gold Logger, extrayez le contenu de cette archiche dans le dossier de jeu (si ce n'était pas déjà fait) et remplacez tous les fichiers si demandé.
-Selon l'archiche que vous avez téléchargée, le mod Gold Logger est soit non-inclu (ZList uniquement), inclu en standalone (aucune dépendence requise mais entre en conflit avec le mod Gold Ammo Visibility) ou inclu en mode compatibilité (requiert que le mod Gold Ammo Visibility soit installé).
+Pour installer le mod Gold Logger, extrayez le contenu de cette archive dans le dossier de jeu (si ce n'était pas déjà fait) et remplacez tous les fichiers si demandé.
+Selon l'archive que vous avez téléchargée, le mod Gold Logger est soit non-inclu (ZList uniquement), inclu en standalone (aucune dépendence requise mais entre en conflit avec le mod Gold Ammo Visibility) ou inclu en mode compatibilité (requiert que le mod Gold Ammo Visibility soit installé).
 Une fois installé, le mod va simplement enregistrer tous les utilisateurs de la gold rencontrés en partie (en jeu ou dans un replay) dans le fichier GOLD_USER.csv situé à la racine du dossier de jeu.
 
 ### Scripts Python
