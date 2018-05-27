@@ -204,8 +204,8 @@ def select_data_files(data_set_id, categories_folder, extras_folder):
     """Prompt a menu for the selection of data files."""
     categories_files = [os.path.join(categories_folder, file_name) for file_name in os.listdir(categories_folder)]
     extra_files = [os.path.join(extras_folder, file_name) for file_name in os.listdir(extras_folder)]
-    categories = [(os.path.basename(file).rstrip('.csv'), file) for file in categories_files if os.path.isfile(file)]
-    extras = [(os.path.basename(file).rstrip('.csv'), file) for file in extra_files if os.path.isfile(file)]
+    categories = [(os.path.splitext(os.path.basename(file))[0], file) for file in categories_files if os.path.isfile(file)]
+    extras = [(os.path.splitext(os.path.basename(file))[0], file) for file in extra_files if os.path.isfile(file)]
     data_options = categories + extras
     data_option_selection, data_files = -1, []
     print("Select one or several data files to include to the data set # %d." % (data_set_id + 1))

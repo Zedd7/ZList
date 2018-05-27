@@ -22,7 +22,14 @@ DATA_FOLDER = '../../data'
 CATEGORIES_FOLDER = '{data_folder}/categories'.format(data_folder=DATA_FOLDER)
 CATEGORY_FILE_FORMAT = '{categories_folder}/%s.csv'.format(categories_folder=CATEGORIES_FOLDER)
 UNKNOWN_ID = -1
-COLORS = [(.93, .11, .14, .75), (.63, .29, .64, .75), (.99, .80, .06, .75), (.00, .00, .00, .40), (.01, .89, .93, .75)]
+COLORS = [
+    (.93, .11, .14, .75),  # Red
+    (.63, .29, .64, .75),  # Purple
+    (.99, .80, .06, .75),  # Yellow
+    (.00, .00, .00, .40),  # Black
+    (.01, .89, .93, .75)   # Cyan
+]
+COLORS = []  # Comment out to use predefined colors
 
 
 def load_player_ids_sets(data_sets_file_paths):
