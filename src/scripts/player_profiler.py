@@ -162,6 +162,15 @@ def plot_pie(data_sets, stat_types, data_sets_names, *args):
             stat_count_d[stat] += 1
 
     if stat_count_d:
+        # Merge smaller groups
+        for stat in list(stat_count_d.keys()):
+            count = stat_count_d[stat]
+            if count / sum(stat_count_d.values()) < 0.05:
+                if 'other' not in stat_count_d:
+                    stat_count_d['other'] = 0
+                stat_count_d['other'] += count
+                del stat_count_d[stat]
+
         groups = stat_count_d.keys()
         if stat_type['sort_by_count']:
             groups = sorted(groups, key=lambda group: stat_count_d[group])
