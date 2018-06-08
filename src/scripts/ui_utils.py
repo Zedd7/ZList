@@ -176,7 +176,7 @@ def select_stat_type(stat_types, axis):
         recommended = stat_names.index('win ratio') + 1 if 'win ratio' in stat_names else None
     elif axis == 'y':
         prompt = "What statistic should be plotted on the {axis}-axis of the graph ?".format(axis=axis)
-        recommended = stat_names.index('wn8') + 1 if 'wn8' in stat_names else None
+        recommended = stat_names.index('WN8') + 1 if 'WN8' in stat_names else None
     else:
         prompt = "What statistic should be plotted on the graph ?"
     return select_simple_option(

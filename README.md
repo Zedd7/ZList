@@ -52,7 +52,7 @@ As they are not included in the archive downloadable from the release page, it i
 
 #### Scripts manipulation
 
-You are now free to play with the different Python scripts. To do so, enter "python <script_name.py>" in the terminal and follow the instructions.
+You are now free to play with the different Python scripts. To do so, enter `python script_name.py` in the terminal and follow the instructions.
 Please note that each script has its own purpose and can depend on the output of another :
 
 - player_lister.py : Register account ids of random players from the cluster in a CSV file.
@@ -117,7 +117,7 @@ Etant donné qu'ils ne sont pas inclus dans l'archive téléchargeable depuis la
 
 #### Manipulation des scripts
 
-Vous êtes maintenant libre de jouer avec les différents scripts Python. Pour ce faire, entrez "python <nom_de_script.py>" et suivez les instructions.
+Vous êtes maintenant libre de jouer avec les différents scripts Python. Pour ce faire, entrez `python nom_de_script.py` et suivez les instructions.
 Veuillez notez que chaque script a sa propre fonction et peut dépendre du résultat d'un autre :
 
 - player_lister.py : Enregistre les ids de compte de joueurs aléatoires du cluster dans un fichier CSV.
