@@ -30,6 +30,11 @@ COLORS = [
     (.01, .89, .93, .75)   # Cyan
 ]
 COLORS = []  # Comment out to use predefined colors
+COLORS = [
+    (.93, .11, .14, .75),  # Red
+    (.99, .80, .06, .75),  # Yellow
+    (.63, .29, .64, .75)   # Purple
+]
 
 
 def load_player_ids_sets(data_sets_file_paths):
@@ -329,15 +334,10 @@ if __name__ == "__main__":
         [(properties['name'], properties) for properties in GRAPH_TYPES.values()]
     )
     stat_types = []
-    if len(graph_properties['axis']) == 1:
+    for axis in graph_properties['axis']:
         stat_types.append(ui_utils.select_stat_type(
-            [(properties['long_name'], properties) for id, properties in stat_enum.STATS.items() if id in graph_properties['allowed_stats']]
+            [(properties['long_name'], properties) for id, properties in stat_enum.STATS.items() if id in graph_properties['allowed_stats']], axis
         ) if len(graph_properties['allowed_stats']) > 1 else stat_enum.STATS[graph_properties['allowed_stats'][0]])
-    else:
-        for axis in graph_properties['axis']:
-            stat_types.append(ui_utils.select_stat_type(
-                [(properties['long_name'], properties) for id, properties in stat_enum.STATS.items() if id in graph_properties['allowed_stats']], axis
-            ) if len(graph_properties['allowed_stats']) > 1 else stat_enum.STATS[graph_properties['allowed_stats'][0]])
     data_sets_number = ui_utils.select_data_sets_number(
         graph_properties['min_data_sets_number'], graph_properties['max_data_sets_number']
     )

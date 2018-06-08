@@ -167,15 +167,18 @@ def select_graph_type(graph_types):
     )
 
 
-def select_stat_type(stat_types, axis=None):
+def select_stat_type(stat_types, axis):
     """Prompt a menu for the selection of the stat type."""
-    prompt, recommended = "", None
-    if axis:
+    prompt, recommended = '', None
+    stat_names = [name for name, _ in stat_types]
+    if axis == 'x':
         prompt = "What statistic should be plotted on the {axis}-axis of the graph ?".format(axis=axis)
+        recommended = stat_names.index('win ratio') + 1 if 'win ratio' in stat_names else None
+    elif axis == 'y':
+        prompt = "What statistic should be plotted on the {axis}-axis of the graph ?".format(axis=axis)
+        recommended = stat_names.index('wn8') + 1 if 'wn8' in stat_names else None
     else:
         prompt = "What statistic should be plotted on the graph ?"
-        stat_names = [name for name, _ in stat_types]
-        recommended = stat_names.index('win ratio') + 1
     return select_simple_option(
         stat_types,
         prompt,
