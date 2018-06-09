@@ -102,7 +102,7 @@ Une fois installé, le mod va simplement enregistrer tous les utilisateurs de la
 
 ### Scripts Python
 
-Quelques scripts Python sont fournis dans ce dépôt afin que vous puissiez dessiner quelques graphiques basés sur les noms and catégories présents dans la ZList ou le serveur.
+Quelques scripts Python sont fournis dans ce dépôt afin que vous puissiez générer quelques graphiques basés sur les noms et catégories présents dans la ZList ou le serveur.
 Etant donné qu'ils ne sont pas inclus dans l'archive téléchargeable depuis la page "releases", il est nécessaire de clôner le dépôt afin de les obtenir.
 
 #### Acquision des outils (Windows)

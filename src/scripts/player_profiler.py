@@ -30,11 +30,6 @@ COLORS = [
     (.01, .89, .93, .75)   # Cyan
 ]
 COLORS = []  # Comment out to use predefined colors
-COLORS = [
-    (.93, .11, .14, .75),  # Red
-    (.99, .80, .06, .75),  # Yellow
-    (.63, .29, .64, .75)   # Purple
-]
 
 
 def load_player_ids_sets(data_sets_file_paths):
