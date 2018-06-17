@@ -27,7 +27,8 @@ COLORS = [
     (.63, .29, .64, .75),  # Purple
     (.99, .80, .06, .75),  # Yellow
     (.00, .00, .00, .40),  # Black
-    (.01, .89, .93, .75)   # Cyan
+    (.01, .89, .93, .75),  # Cyan
+    (.11, .47, .71, .75),  # Blue
 ]
 COLORS = []  # Comment out to use predefined colors
 
@@ -145,7 +146,9 @@ def plot_scatter(data_sets, stat_types, data_sets_names, zoom_on_preferred_windo
 def plot_pie(data_sets, stat_types, data_sets_names, *args):
     """Group players by statistic value on a pie chart."""
     EXPLODE_FACTOR = 0.1
+    RATIO_TRESHOLD = 0.05
     stat_type = stat_types[0]
+    data_sets_name = '({name})'.format(name=', '.join(data_sets_names[0])) if len(data_sets_names) == 1 else ''
 
     stat_count_d = {}
     for set_id, player_ids in enumerate(data_sets):
@@ -160,7 +163,7 @@ def plot_pie(data_sets, stat_types, data_sets_names, *args):
         # Merge smaller groups
         for stat in list(stat_count_d.keys()):
             count = stat_count_d[stat]
-            if count / sum(stat_count_d.values()) < 0.05:
+            if count / sum(stat_count_d.values()) < RATIO_TRESHOLD:
                 if 'other' not in stat_count_d:
                     stat_count_d['other'] = 0
                 stat_count_d['other'] += count
@@ -175,7 +178,7 @@ def plot_pie(data_sets, stat_types, data_sets_names, *args):
         colors = COLORS[:len(groups)] if len(groups) <= len(COLORS) else None
         labels = [group.upper() for group in groups]
         explodes = [(1 - count / sum(counts)) * EXPLODE_FACTOR for group, count in zip(groups, counts)]
-        plt.title("Pie chart of the {stat} of players".format(stat=stat_type['long_name']))
+        plt.title("Pie chart of the {stat} of players {name}".format(stat=stat_type['long_name'], name=data_sets_name))
         plt.pie(x=counts, colors=colors, labels=labels, explode=explodes, autopct='%1.1f%%', startangle=90)
         plt.axis('equal')
         plt.tight_layout()

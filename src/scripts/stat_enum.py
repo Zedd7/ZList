@@ -177,7 +177,7 @@ STATS = {
         'group_by_value': False,
         'is_percentage': True,
         'preferred_lb': 0,
-        'preferred_ub': 0,
+        'preferred_ub': 100,
         'mark_step': 5
     },
     'count': {
