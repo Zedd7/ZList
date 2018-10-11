@@ -45,7 +45,7 @@ As they are not included in the archive downloadable from the release page, it i
 1. Download and install [Git](https://git-scm.com/downloads). Customize git to your liking but make sure to check "Use Git from the Windows Command Prompt" when asked. (Alternatively, don't use Git if you know how to download the repository and naviguate to the right folder in the terminal.)
 2. Download and install [Python 3.6](https://www.python.org/downloads/) or higher. Check "Add Python 3.6 to PATH" and click "Install Now".
 3. Open a terminal with administrator privileges (search for "cmd" in the Start Menu > right click on it > "Execute as administator")
-4. Enter `pip install requests Pillow matplotlib`
+4. Enter `pip install requests Pillow numpy matplotlib`
 5. Enter `cd %HOMEDRIVE%%HOMEPATH%`
 6. Enter `git clone https://github.com/Zedd7/ZList.git`
 7. Enter `cd ZList/src/scripts`
@@ -110,7 +110,7 @@ Etant donné qu'ils ne sont pas inclus dans l'archive téléchargeable depuis la
 1. Téléchargez et installez [Git](https://git-scm.com/downloads). Customisez git selon vos goûts mais prenez garde à cocher "Use Git from the Windows Command Prompt" lorsque demandé. (Alternativement, n'utilisez pas Git si vous savez comment télécharger le dépôt et naviguer vers le bon dossier dans le terminal.)
 2. Téléchargez et installez [Python 3.6](https://www.python.org/downloads/) ou ultérieur. Cochez "Add Python 3.6 to PATH" et cliquez sur "Install Now".
 3. Ouvrez un terminal avec les privilèges administrateur (cherchez "cmd" dans le Menu Démarrer > clic droit dessus > "Exécuter en tant qu'administrateur")
-4. Entrez `pip install requests Pillow matplotlib`
+4. Entrez `pip install requests Pillow numpy matplotlib`
 5. Entrez `cd %HOMEDRIVE%%HOMEPATH%`
 6. Entrez `git clone https://github.com/Zedd7/ZList.git`
 7. Entrez `cd ZList/src/scripts`

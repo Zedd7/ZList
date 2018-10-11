@@ -6,6 +6,7 @@ import sys
 import math
 import csv
 
+import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import requests
@@ -54,11 +55,12 @@ def plot_histogram(data_sets, stat_types, data_sets_names, zoom_on_preferred_win
     """Plot a set of statistics on an histogram."""
     BINS_IN_PREFERRED_WINDOW = 20
     stat_type = stat_types[0]
-    preferred_lb, preferred_ub, mark_step = [stat_type[key] for key in ('preferred_lb', 'preferred_ub', 'mark_step')]
+    preferred_lb, preferred_ub, mark_step = [stat_type[key] for key in ('preferred_lb', 'preferred_ub', 'mark_step_hist')]
     exp_values_d = wn8_utils.get_exp_values_d() if stat_type['use_exp_values'] else None
 
-    stats_array, bins_array, lb_array, ub_array = [], [], [], []
+    stats_array, bin_number_array, lb_array, ub_array = [], [], [], []
     for set_id, player_ids in enumerate(data_sets):
+        # Fetch and compute statistics of accounts
         stats_d = get_stats(stat_type, set_id, None, player_ids, exp_values_d)
         if stats_d:
             stats_array.append(list(stats_d.values()))
@@ -76,15 +78,15 @@ def plot_histogram(data_sets, stat_types, data_sets_names, zoom_on_preferred_win
                 bins_factor = (ub - lb) / (preferred_ub - preferred_lb)
             else:
                 bins_factor = 1
-            bins = BINS_IN_PREFERRED_WINDOW * bins_factor
+            bin_number = BINS_IN_PREFERRED_WINDOW * bins_factor
 
             # Compute number of bins to adjust on marks
             marks = round((ub - lb) / mark_step)
-            bins = marks if bins <= marks else round(bins / marks) * marks
-            bins_array.append(bins)
+            bin_number = marks if bin_number <= marks else round(bin_number / marks) * marks
+            bin_number_array.append(bin_number)
 
-    if bins_array:
-        bins, lb, ub = max(bins_array), min(lb_array), max(ub_array)
+    if bin_number_array:
+        bin_number, lb, ub = max(bin_number_array), min(lb_array), max(ub_array)
         bin_range = [lb, ub] if lb < ub else None
         weights = [[len(stats_array[0])/len(stats_array[i]) for _ in range(len(stats_array[i]))] for i in range(len(stats_array))]
         colors = COLORS[:len(stats_array)] if len(stats_array) <= len(COLORS) else None
@@ -97,24 +99,26 @@ def plot_histogram(data_sets, stat_types, data_sets_names, zoom_on_preferred_win
         plt.ylabel("player ratio")
         plt.gca().xaxis.set_major_formatter(x_formatter)
         plt.gca().yaxis.set_major_formatter(y_formatter)
-        plt.hist(x=stats_array, bins=bins, range=bin_range, weights=weights, color=colors, label=labels, alpha=0.75, ec='black')
+        plt.hist(x=stats_array, bins=bin_number, range=bin_range, weights=weights, color=colors, label=labels, alpha=0.75, ec='black')
         plt.legend()
         plt.show()
 
 
 def plot_scatter(data_sets, stat_types, data_sets_names, zoom_on_preferred_window=False, *args):
     """Plot a set of statistics on an scatter plot."""
-    exp_values_d = wn8_utils.get_exp_values_d() if any(stat_type['use_exp_values'] for stat_type in stat_types) else None
     lb_x, ub_x = stat_types[0]['preferred_lb'], stat_types[0]['preferred_ub']
     lb_y, ub_y = stat_types[1]['preferred_lb'], stat_types[1]['preferred_ub']
+    exp_values_d = wn8_utils.get_exp_values_d() if any(stat_type['use_exp_values'] for stat_type in stat_types) else None
 
     for set_id, player_ids in enumerate(data_sets):
+        # Fetch and compute statistics of accounts
         stats_d_array = []
-        for axis, stat_type in enumerate(stat_types[:2]):
+        for axis, stat_type in enumerate(stat_types):
             axis_exp_values_d = exp_values_d if stat_type['use_exp_values'] else None
             stats_d = get_stats(stat_type, set_id, None, player_ids, axis_exp_values_d)
             stats_d_array.append(stats_d)
 
+        # Discard incomplete data
         stats_d_x, stats_d_y = stats_d_array
         stats_x, stats_y = [], []
         for player_id in player_ids:
@@ -122,8 +126,9 @@ def plot_scatter(data_sets, stat_types, data_sets_names, zoom_on_preferred_windo
                 stats_x.append(stats_d_x[player_id])
                 stats_y.append(stats_d_y[player_id])
 
+        # Plot results
         label = ', '.join(data_sets_names[set_id])
-        color = COLORS[set_id] if set_id < len(COLORS) else None
+        color = [COLORS[set_id]] if set_id < len(COLORS) else None
         plt.scatter(x=stats_x, y=stats_y, label=label, c=color, marker='.', alpha=0.50)
 
     stat_x_name, stat_y_name = stat_types[0]['long_name'], stat_types[1]['long_name']
@@ -139,6 +144,82 @@ def plot_scatter(data_sets, stat_types, data_sets_names, zoom_on_preferred_windo
             plt.xlim(stat_types[0]['preferred_lb'], stat_types[0]['preferred_ub'])
         if lb_y < ub_y:
             plt.ylim(stat_types[1]['preferred_lb'], stat_types[1]['preferred_ub'])
+    plt.legend()
+    plt.show()
+
+
+def plot_curve(data_sets, stat_types, data_sets_names, zoom_on_preferred_window=False, *args):
+    """Plot a set of statistics on a curve."""
+    BINS_IN_PREFERRED_WINDOW = 20
+    exp_values_d = wn8_utils.get_exp_values_d() if any(stat_type['use_exp_values'] for stat_type in stat_types) else None
+    preferred_lb_x, preferred_ub_x, mark_step_x = [stat_types[0][key] for key in ('preferred_lb', 'preferred_ub', 'mark_step_curve')]
+    lb_y, ub_y = [stat_types[1][key] for key in ('preferred_lb', 'preferred_ub')]
+
+    lb_x_array, ub_x_array = [], []
+    for set_id, player_ids in enumerate(data_sets):
+        # Fetch, compute and clean statistics of accounts
+        stats_d_array = []
+        for axis, stat_type in enumerate(stat_types):
+            axis_exp_values_d = exp_values_d if stat_type['use_exp_values'] else None
+            stats_d = get_stats(stat_type, set_id, None, player_ids, axis_exp_values_d)
+            stats_d_array.append(stats_d)
+        stats_d_x, stats_d_y = stats_d_array
+        for player_id in player_ids:
+            if player_id not in stats_d_x:
+                if player_id in stats_d_y:
+                    del stats_d_y[player_id]
+            elif player_id not in stats_d_y:
+                if player_id in stats_d_x:
+                    del stats_d_x[player_id]
+
+        # Compute lower and upper bound of stats
+        min_stat_x, max_stat_x = min(stats_d_x.values()), max(stats_d_x.values())
+        lb_x = preferred_lb_x if zoom_on_preferred_window and preferred_lb_x != 0 else int(math.floor(math.floor(min_stat_x / mark_step_x) * mark_step_x))
+        ub_x = preferred_ub_x if zoom_on_preferred_window and preferred_ub_x != 0 else int(math.ceil(math.ceil(max_stat_x / mark_step_x) * mark_step_x))
+        lb_x_array.append(lb_x)
+        ub_x_array.append(ub_x)
+
+        # Compute number of bins to approach that of preferred window
+        bins_factor = None
+        if preferred_lb_x < preferred_ub_x:
+            bins_factor = (ub_x - lb_x) / (preferred_ub_x - preferred_lb_x)
+        else:
+            bins_factor = 1
+        bin_number = BINS_IN_PREFERRED_WINDOW * bins_factor
+
+        # Compute number of bins to adjust on marks
+        marks = round((ub_x - lb_x) / mark_step_x)
+        bin_number = marks if bin_number <= marks else round(bin_number / marks) * marks
+
+        # Sort accounts by x stat in bins
+        bin_space, bin_step = np.linspace(lb_x, ub_x, num=bin_number, endpoint=True, retstep=True)
+        bins = {bin: [] for bin in bin_space}
+        for player_id in stats_d_x.keys():
+            for bin_label in bins:
+                if stats_d_x[player_id] >= float(bin_label) and stats_d_x[player_id] < float(bin_label) + bin_step:
+                    bins[bin_label].append(stats_d_y[player_id])
+        stats_x = [float(bin_label) for bin_label in bins]
+        stats_y = [np.mean(bins[bin_label]) if bins[bin_label] else None for bin_label in bins]
+
+        # Plot results
+        label = ', '.join(data_sets_names[set_id])
+        color = [COLORS[set_id]] if set_id < len(COLORS) else None
+        plt.plot(stats_x, stats_y, label=label, c=color, linestyle='-', marker='.', alpha=0.75)
+
+    stat_x_name, stat_y_name = stat_types[0]['long_name'], stat_types[1]['long_name']
+    x_formatter = ticker.FuncFormatter(lambda x, pos: "{value}{sign}".format(value=int(x), sign=('%' if stat_types[0]['is_percentage'] else '')))
+    y_formatter = ticker.FuncFormatter(lambda x, pos: "{value}{sign}".format(value=int(x), sign=('%' if stat_types[1]['is_percentage'] else '')))
+    plt.title("Curve plot of {stat1} versus {stat0} of players".format(stat0=stat_x_name, stat1=stat_y_name))
+    plt.xlabel("{stat0} of players".format(stat0=stat_x_name))
+    plt.ylabel("{stat1} of players".format(stat1=stat_y_name))
+    plt.gca().xaxis.set_major_formatter(x_formatter)
+    plt.gca().yaxis.set_major_formatter(y_formatter)
+    if zoom_on_preferred_window:
+        lb_x, ub_x = min(lb_x_array), max(ub_x_array)
+        if lb_x < ub_x:
+            plt.xlim(lb_x, ub_x)
+        if lb_y < ub_y:
+            plt.ylim(lb_y, ub_y)
     plt.legend()
     plt.show()
 
@@ -303,6 +384,18 @@ GRAPH_TYPES = {
     'scatter': {
         'plotter': plot_scatter,
         'name': "scatter plot",
+        'axis': ['x', 'y'],
+        'allowed_stats': ['battles', 'wn8', 'global_rating', 'wr', 'avg_xp',
+                          'avg_damage', 'avg_assist', 'avg_blocked', 'avg_kill',
+                          'avg_spot', 'hit_ratio', 'avg_capture', 'avg_defense',
+                          'splash_ratio'],
+        'min_data_sets_number': 1,
+        'max_data_sets_number': 5,
+        'is_zoomable': True
+    },
+    'curve': {
+        'plotter': plot_curve,
+        'name': "curve",
         'axis': ['x', 'y'],
         'allowed_stats': ['battles', 'wn8', 'global_rating', 'wr', 'avg_xp',
                           'avg_damage', 'avg_assist', 'avg_blocked', 'avg_kill',

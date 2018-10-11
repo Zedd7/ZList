@@ -15,7 +15,8 @@ STATS = {
         'is_percentage': False,
         'preferred_lb': 0,
         'preferred_ub': 100000,
-        'mark_step': 5000
+        'mark_step_hist': 5000,
+        'mark_step_curve': 1000,
     },
     'wn8': {
         'stats_fetcher': profiler.get_wn8_d,
@@ -26,7 +27,8 @@ STATS = {
         'is_percentage': False,
         'preferred_lb': 0,
         'preferred_ub': 3500,
-        'mark_step': 500
+        'mark_step_hist': 500,
+        'mark_step_curve': 100
     },
     'global_rating': {
         'stats_fetcher': profiler.get_total_stat_d,
@@ -38,7 +40,8 @@ STATS = {
         'is_percentage': False,
         'preferred_lb': 0,
         'preferred_ub': 12000,
-        'mark_step': 600
+        'mark_step_hist': 600,
+        'mark_step_curve': 100
     },
     'wr': {
         'stats_fetcher': profiler.get_average_stat_d,
@@ -51,7 +54,8 @@ STATS = {
         'is_percentage': True,
         'preferred_lb': 40,
         'preferred_ub': 75,
-        'mark_step': 5
+        'mark_step_hist': 5,
+        'mark_step_curve': 1
     },
     'avg_xp': {
         'stats_fetcher': profiler.get_total_stat_d,
@@ -63,7 +67,8 @@ STATS = {
         'is_percentage': False,
         'preferred_lb': 0,
         'preferred_ub': 1200,
-        'mark_step': 60
+        'mark_step_hist': 60,
+        'mark_step_curve': 10
     },
     'avg_damage': {
         'stats_fetcher': profiler.get_average_stat_d,
@@ -76,7 +81,8 @@ STATS = {
         'is_percentage': False,
         'preferred_lb': 0,
         'preferred_ub': 3000,
-        'mark_step': 150
+        'mark_step_hist': 150,
+        'mark_step_curve': 30
     },
     'avg_assist': {
         'stats_fetcher': profiler.get_total_stat_d,
@@ -88,7 +94,8 @@ STATS = {
         'is_percentage': False,
         'preferred_lb': 0,
         'preferred_ub': 800,
-        'mark_step': 40
+        'mark_step_hist': 40,
+        'mark_step_curve': 10
     },
     'avg_blocked': {
         'stats_fetcher': profiler.get_total_stat_d,
@@ -100,7 +107,8 @@ STATS = {
         'is_percentage': False,
         'preferred_lb': 0,
         'preferred_ub': 800,
-        'mark_step': 40
+        'mark_step_hist': 40,
+        'mark_step_curve': 10
     },
     'avg_kill': {
         'stats_fetcher': profiler.get_average_stat_d,
@@ -113,7 +121,8 @@ STATS = {
         'is_percentage': False,
         'preferred_lb': 0,
         'preferred_ub': 2,
-        'mark_step': 1
+        'mark_step_hist': 1,
+        'mark_step_curve': 1
     },
     'avg_spot': {
         'stats_fetcher': profiler.get_average_stat_d,
@@ -126,7 +135,8 @@ STATS = {
         'is_percentage': False,
         'preferred_lb': 0,
         'preferred_ub': 3,
-        'mark_step': 1
+        'mark_step_hist': 1,
+        'mark_step_curve': 1
     },
     'hit_ratio': {
         'stats_fetcher': profiler.get_per_shot_stat_d,
@@ -139,7 +149,8 @@ STATS = {
         'is_percentage': True,
         'preferred_lb': 20,
         'preferred_ub': 100,
-        'mark_step': 4
+        'mark_step_hist': 4,
+        'mark_step_curve': 1
     },
     'avg_capture': {
         'stats_fetcher': profiler.get_average_stat_d,
@@ -152,7 +163,8 @@ STATS = {
         'is_percentage': False,
         'preferred_lb': 0,
         'preferred_ub': 4,
-        'mark_step': 1
+        'mark_step_hist': 1,
+        'mark_step_curve': 1
     },
     'avg_defense': {
         'stats_fetcher': profiler.get_average_stat_d,
@@ -165,7 +177,8 @@ STATS = {
         'is_percentage': False,
         'preferred_lb': 0,
         'preferred_ub': 3,
-        'mark_step': 1
+        'mark_step_hist': 1,
+        'mark_step_curve': 1
     },
     'splash_ratio': {
         'stats_fetcher': profiler.get_average_stat_d,
@@ -178,7 +191,8 @@ STATS = {
         'is_percentage': True,
         'preferred_lb': 0,
         'preferred_ub': 100,
-        'mark_step': 5
+        'mark_step_hist': 5,
+        'mark_step_curve': 1
     },
     'count': {
         'stats_fetcher': profiler.get_count_d,
