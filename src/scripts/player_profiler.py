@@ -32,6 +32,8 @@ COLORS = [
     (.11, .47, .71, .75),  # Blue
 ]
 COLORS = []  # Comment out to use predefined colors
+WR_REFERENCES = [47, 49, 53, 58, 64]
+WN8_REFERENCES = [452, 985, 1578, 2368, 3180]
 
 
 def load_player_ids_sets(data_sets_file_paths):
@@ -131,6 +133,8 @@ def plot_scatter(data_sets, stat_types, data_sets_names, zoom_on_preferred_windo
         color = [COLORS[set_id]] if set_id < len(COLORS) else None
         plt.scatter(x=stats_x, y=stats_y, label=label, c=color, marker='.', alpha=0.50)
 
+    #plt.plot(WR_REFERENCES, WN8_REFERENCES, label="Reference curve", c='k', linestyle='--', marker='.', alpha=0.75)  # Uncomment to plot WR/WN8 reference curve
+
     stat_x_name, stat_y_name = stat_types[0]['long_name'], stat_types[1]['long_name']
     x_formatter = ticker.FuncFormatter(lambda x, pos: "{value}{sign}".format(value=int(x), sign=('%' if stat_types[0]['is_percentage'] else '')))
     y_formatter = ticker.FuncFormatter(lambda x, pos: "{value}{sign}".format(value=int(x), sign=('%' if stat_types[1]['is_percentage'] else '')))
@@ -199,12 +203,15 @@ def plot_curve(data_sets, stat_types, data_sets_names, zoom_on_preferred_window=
                 if stats_d_x[player_id] >= float(bin_label) and stats_d_x[player_id] < float(bin_label) + bin_step:
                     bins[bin_label].append(stats_d_y[player_id])
         stats_x = [float(bin_label) for bin_label in bins]
-        stats_y = [np.mean(bins[bin_label]) if bins[bin_label] else None for bin_label in bins]
+        stats_y = [np.mean(bins[bin_label]) if bins[bin_label] and len(bins[bin_label]) >= 10 else None for bin_label in bins]
 
         # Plot results
         label = ', '.join(data_sets_names[set_id])
-        color = [COLORS[set_id]] if set_id < len(COLORS) else None
+        color = COLORS[set_id] if set_id < len(COLORS) else None
+        #plt.scatter(x=[x for x in stats_d_x.values()], y=[y for y in stats_d_y.values()], label=label, c=None, marker='.', alpha=0.75)  # Uncomment to add the scatter plot
         plt.plot(stats_x, stats_y, label=label, c=color, linestyle='-', marker='.', alpha=0.75)
+
+    #plt.plot(WR_REFERENCES, WN8_REFERENCES, label="Reference curve", c='k', linestyle='--', marker='.', alpha=0.75)  # Uncomment to plot WR/WN8 reference curve
 
     stat_x_name, stat_y_name = stat_types[0]['long_name'], stat_types[1]['long_name']
     x_formatter = ticker.FuncFormatter(lambda x, pos: "{value}{sign}".format(value=int(x), sign=('%' if stat_types[0]['is_percentage'] else '')))
