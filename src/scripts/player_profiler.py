@@ -29,7 +29,7 @@ COLORS = [
     (.99, .80, .06, .75),  # Yellow
     (.00, .00, .00, .40),  # Black
     (.01, .89, .93, .75),  # Cyan
-    (.11, .47, .71, .75),  # Blue
+    (.11, .47, .71, .75)   # Blue
 ]
 COLORS = []  # Comment out to use predefined colors
 WR_REFERENCES = [47, 49, 53, 58, 64]
@@ -155,6 +155,7 @@ def plot_scatter(data_sets, stat_types, data_sets_names, zoom_on_preferred_windo
 def plot_curve(data_sets, stat_types, data_sets_names, zoom_on_preferred_window=False, *args):
     """Plot a set of statistics on a curve."""
     BINS_IN_PREFERRED_WINDOW = 20
+    BIN_THRESHOLD = 50
     exp_values_d = wn8_utils.get_exp_values_d() if any(stat_type['use_exp_values'] for stat_type in stat_types) else None
     preferred_lb_x, preferred_ub_x, mark_step_x = [stat_types[0][key] for key in ('preferred_lb', 'preferred_ub', 'mark_step_curve')]
     lb_y, ub_y = [stat_types[1][key] for key in ('preferred_lb', 'preferred_ub')]
@@ -203,7 +204,7 @@ def plot_curve(data_sets, stat_types, data_sets_names, zoom_on_preferred_window=
                 if stats_d_x[player_id] >= float(bin_label) and stats_d_x[player_id] < float(bin_label) + bin_step:
                     bins[bin_label].append(stats_d_y[player_id])
         stats_x = [float(bin_label) for bin_label in bins]
-        stats_y = [np.mean(bins[bin_label]) if bins[bin_label] and len(bins[bin_label]) >= 10 else None for bin_label in bins]
+        stats_y = [np.mean(bins[bin_label]) if bins[bin_label] and len(bins[bin_label]) >= BIN_THRESHOLD else None for bin_label in bins]
 
         # Plot results
         label = ', '.join(data_sets_names[set_id])
@@ -234,7 +235,7 @@ def plot_curve(data_sets, stat_types, data_sets_names, zoom_on_preferred_window=
 def plot_pie(data_sets, stat_types, data_sets_names, *args):
     """Group players by statistic value on a pie chart."""
     EXPLODE_FACTOR = 0.1
-    RATIO_TRESHOLD = 0.05
+    RATIO_THRESHOLD = 0.05
     stat_type = stat_types[0]
     data_sets_name = '({name})'.format(name=', '.join(data_sets_names[0])) if len(data_sets_names) == 1 else ''
 
@@ -251,7 +252,7 @@ def plot_pie(data_sets, stat_types, data_sets_names, *args):
         # Merge smaller groups
         for stat in list(stat_count_d.keys()):
             count = stat_count_d[stat]
-            if count / sum(stat_count_d.values()) < RATIO_TRESHOLD:
+            if count / sum(stat_count_d.values()) < RATIO_THRESHOLD:
                 if 'other' not in stat_count_d:
                     stat_count_d['other'] = 0
                 stat_count_d['other'] += count
